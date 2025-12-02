@@ -8,9 +8,10 @@
         private static GlobalState? _instance;
         public static GlobalState Instance => _instance ??= new GlobalState();
 
-        public UnternehmensDaten Daten { get; set; } = new UnternehmensDaten();
+        // Das "Megafon": Andere können hier zuhören
+        public event Action? DataChanged;
 
-        // Dank dem neuen Konstruktor in TabellenWerte sind hier jetzt sofort Zahlen drin!
+        public UnternehmensDaten Daten { get; set; } = new UnternehmensDaten();
         public TabellenWerte Werte { get; set; } = new TabellenWerte();
 
         // Standardwerte initialisieren, damit nicht alles 0 ist, falls Excel noch nicht geladen wurde
@@ -22,6 +23,12 @@
             Werte.AuslagenPauschaleProzent = 0.2m;
             Werte.BeitragEins = 42m;
             // ... weitere Defaults können hier rein
+        }
+
+        // Diese Methode rufen wir auf, wenn sich was geändert hat
+        public void NotifyDataChanged()
+        {
+            DataChanged?.Invoke();
         }
     }
 }

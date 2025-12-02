@@ -26,17 +26,22 @@
             <Setter Property="Margin" Value="0,0,0,15"/>
             <Setter Property="TextDecorations" Value="Underline"/>
         </Style>
-        <Style x:Key="InputBox" TargetType="TextBox">
+        <Style x:Key="InputBoxReadOnly" TargetType="TextBox">
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="Padding" Value="5"/>
             <Setter Property="Height" Value="35"/>
             <Setter Property="Width" Value="120"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Cursor" Value="Arrow"/>
+            <Setter Property="Background" Value="#E0E0E0"/>
+            <Setter Property="Foreground" Value="#555555"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border Background="White" CornerRadius="10" BorderThickness="0">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="10" BorderThickness="0">
                             <ScrollViewer x:Name="PART_ContentHost" Margin="5,0"/>
                         </Border>
                     </ControlTemplate>
@@ -68,7 +73,8 @@
 
         <StackPanel Grid.Row="0" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Center">
             <TextBlock Text="Anzahl Mitarbeiter:" Foreground="White" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,15,0"/>
-            <TextBox Text="{Binding AnzahlMitarbeiterText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputBox}" TextAlignment="Center"/>
+
+            <TextBox Text="{Binding AnzahlMitarbeiterText, Mode=OneWay}" Style="{StaticResource InputBoxReadOnly}" TextAlignment="Center"/>
         </StackPanel>
 
         <TextBlock Grid.Row="2" Grid.Column="0" Text="Staffel" Style="{StaticResource HeaderLabel}"/>

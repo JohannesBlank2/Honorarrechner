@@ -18,8 +18,6 @@ namespace HonorarRechner.Wpf.ViewModels
         public UnternehmensViewModel()
         {
             _honorarService = new HonorarService();
-
-            // 1. Daten laden (wichtig beim Zurückkommen)
             LoadFromGlobalState();
 
             OpenExcelCommand = new RelayCommand(_ => MessageBox.Show("Open Excel"));
@@ -27,115 +25,47 @@ namespace HonorarRechner.Wpf.ViewModels
             ZurueckCommand = new RelayCommand(_ => ZurueckRequested?.Invoke());
             WeiterCommand = new RelayCommand(_ => WeiterRequested?.Invoke());
 
-            // 2. Einmal initial rechnen
             Recalculate();
         }
 
-        // --- Shell ---
         public string ViewTitle => "Unternehmensdaten";
         public string JahresHonorarText => $"Jahres Honorar: {_jahresHonorar:C}";
         public string MonatsHonorarText => $"Monats Honorar: {(_jahresHonorar / 12m):C}";
 
-        // --- Commands ---
         public ICommand OpenExcelCommand { get; }
         public ICommand UpdateExcelCommand { get; }
         public ICommand ZurueckCommand { get; }
         public ICommand WeiterCommand { get; }
 
-        // --- Data ---
         private decimal _jahresHonorar;
 
         private string _umsatzImJahr = "";
-        public string UmsatzImJahr
-        {
-            get => _umsatzImJahr;
-            set
-            {
-                if (SetField(ref _umsatzImJahr, value))
-                {
-                    GlobalState.Instance.Daten.UmsatzImJahr = ParseDecimal(value);
-                    Recalculate();
-                }
-            }
-        }
+        public string UmsatzImJahr { get => _umsatzImJahr; set { if (SetField(ref _umsatzImJahr, value)) { GlobalState.Instance.Daten.UmsatzImJahr = ParseDecimal(value); Recalculate(); } } }
 
         private string _bilanzsumme = "";
-        public string Bilanzsumme
-        {
-            get => _bilanzsumme;
-            set
-            {
-                if (SetField(ref _bilanzsumme, value))
-                {
-                    GlobalState.Instance.Daten.Bilanzsumme = ParseDecimal(value);
-                    Recalculate();
-                }
-            }
-        }
+        public string Bilanzsumme { get => _bilanzsumme; set { if (SetField(ref _bilanzsumme, value)) { GlobalState.Instance.Daten.Bilanzsumme = ParseDecimal(value); Recalculate(); } } }
 
         private string _jahresueberschuss = "";
-        public string Jahresueberschuss
-        {
-            get => _jahresueberschuss;
-            set
-            {
-                if (SetField(ref _jahresueberschuss, value))
-                {
-                    GlobalState.Instance.Daten.Jahresueberschuss = ParseDecimal(value);
-                    Recalculate();
-                }
-            }
-        }
+        public string Jahresueberschuss { get => _jahresueberschuss; set { if (SetField(ref _jahresueberschuss, value)) { GlobalState.Instance.Daten.Jahresueberschuss = ParseDecimal(value); Recalculate(); } } }
 
         private string _anzahlMitarbeiter = "";
-        public string AnzahlMitarbeiter
-        {
-            get => _anzahlMitarbeiter;
-            set
-            {
-                if (SetField(ref _anzahlMitarbeiter, value))
-                {
-                    int.TryParse(value, out int result);
-                    GlobalState.Instance.Daten.AnzahlMitarbeiter = result;
-                    Recalculate();
-                }
-            }
-        }
+        public string AnzahlMitarbeiter { get => _anzahlMitarbeiter; set { if (SetField(ref _anzahlMitarbeiter, value)) { int.TryParse(value, out int result); GlobalState.Instance.Daten.AnzahlMitarbeiter = result; Recalculate(); } } }
 
         private bool _istBargeldGewerbe;
-        public bool IstBargeldGewerbe
-        {
-            get => _istBargeldGewerbe;
-            set
-            {
-                if (SetField(ref _istBargeldGewerbe, value))
-                {
-                    GlobalState.Instance.Daten.IstBargeldGewerbe = value;
-                    if (value) IstOnlineHaendler = false;
-                    Recalculate();
-                }
-            }
-        }
+        public bool IstBargeldGewerbe { get => _istBargeldGewerbe; set { if (SetField(ref _istBargeldGewerbe, value)) { GlobalState.Instance.Daten.IstBargeldGewerbe = value; if (value) IstOnlineHaendler = false; Recalculate(); } } }
 
         private bool _istOnlineHaendler;
-        public bool IstOnlineHaendler
-        {
-            get => _istOnlineHaendler;
-            set
-            {
-                if (SetField(ref _istOnlineHaendler, value))
-                {
-                    GlobalState.Instance.Daten.IstOnlineHaendler = value;
-                    if (value) IstBargeldGewerbe = false;
-                    Recalculate();
-                }
-            }
-        }
+        public bool IstOnlineHaendler { get => _istOnlineHaendler; set { if (SetField(ref _istOnlineHaendler, value)) { GlobalState.Instance.Daten.IstOnlineHaendler = value; if (value) IstBargeldGewerbe = false; Recalculate(); } } }
 
         private void Recalculate()
         {
             var ergebnis = _honorarService.BerechneAlles();
             _jahresHonorar = ergebnis.JahresHonorar;
+
+            // WICHTIG: Bescheid sagen, dass sich Daten geändert haben!
+            // Damit aktualisiert sich jetzt auch die LohnView automatisch.
+            GlobalState.Instance.NotifyDataChanged();
+
             OnPropertyChanged(nameof(JahresHonorarText));
             OnPropertyChanged(nameof(MonatsHonorarText));
         }
@@ -143,12 +73,10 @@ namespace HonorarRechner.Wpf.ViewModels
         private void LoadFromGlobalState()
         {
             var d = GlobalState.Instance.Daten;
-            // Nur laden, wenn Werte > 0 sind, sonst bleibt das Feld leer (besser für UX beim Start)
             _umsatzImJahr = d.UmsatzImJahr > 0 ? d.UmsatzImJahr.ToString("N0") : "";
             _bilanzsumme = d.Bilanzsumme > 0 ? d.Bilanzsumme.ToString("N0") : "";
             _jahresueberschuss = d.Jahresueberschuss > 0 ? d.Jahresueberschuss.ToString("N0") : "";
             _anzahlMitarbeiter = d.AnzahlMitarbeiter > 0 ? d.AnzahlMitarbeiter.ToString() : "";
-
             _istBargeldGewerbe = d.IstBargeldGewerbe;
             _istOnlineHaendler = d.IstOnlineHaendler;
         }
@@ -156,7 +84,6 @@ namespace HonorarRechner.Wpf.ViewModels
         private decimal ParseDecimal(string input)
         {
             if (string.IsNullOrWhiteSpace(input)) return 0m;
-            // Robustes Parsing: Punkte und € entfernen, Komma als Dezimaltrenner akzeptieren
             string clean = input.Replace(".", "").Replace("€", "").Trim();
             if (decimal.TryParse(clean, out decimal res)) return res;
             return 0m;

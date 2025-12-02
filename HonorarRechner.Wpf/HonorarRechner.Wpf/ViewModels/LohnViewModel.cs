@@ -4,100 +4,128 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using System.Windows;
+using HonorarRechner.Core.Models;
+using HonorarRechner.Core.Services;
 
 namespace HonorarRechner.Wpf.ViewModels
 {
     public class LohnViewModel : INotifyPropertyChanged
     {
         public event Action? ZurueckRequested;
+        private readonly HonorarService _honorarService;
         private readonly CultureInfo _deCulture = CultureInfo.GetCultureInfo("de-DE");
 
         public LohnViewModel()
         {
+            _honorarService = new HonorarService();
             ZurueckCommand = new RelayCommand(_ => ZurueckRequested?.Invoke());
             OpenExcelCommand = new RelayCommand(_ => MessageBox.Show("Open Excel"));
             UpdateExcelCommand = new RelayCommand(_ => MessageBox.Show("Update Excel"));
-            AnzahlMitarbeiterText = "10";
+
+            // 1. Laden beim Start
+            LoadData();
+
+            // 2. WICHTIG: Wenn sich Daten im GlobalState ändern (z.B. in UnternehmensView), hier neu laden!
+            GlobalState.Instance.DataChanged += LoadData;
         }
 
-        // --- Shell Properties ---
         public string ViewTitle => "Lohnbuchhaltung";
-        public string JahresHonorarText => "Jahres Honorar: 0,00 €";
-        public string MonatsHonorarText => "Monats Honorar: 0,00 €";
+        private decimal _jahresHonorar;
+        public string JahresHonorarText => $"Jahres Honorar: {_jahresHonorar:C}";
+        public string MonatsHonorarText => $"Monats Honorar: {(_jahresHonorar / 12m):C}";
 
-        // --- Commands ---
         public ICommand ZurueckCommand { get; }
         public ICommand OpenExcelCommand { get; }
         public ICommand UpdateExcelCommand { get; }
         public ICommand? WeiterCommand => null;
 
-        // --- Data ---
+        // Keine Setter mehr hier -> Daten kommen aus GlobalState
         private int _anzahlMitarbeiter;
-        public string AnzahlMitarbeiterText
-        {
-            get => _anzahlMitarbeiter.ToString();
-            set
-            {
-                _anzahlMitarbeiter = int.TryParse(value, out int result) ? result : 0;
-                Recalculate();
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(CountMa1)); OnPropertyChanged(nameof(CountMa2_9)); OnPropertyChanged(nameof(CountMa10_19));
-                OnPropertyChanged(nameof(CountMa20_49)); OnPropertyChanged(nameof(CountMa50_100)); OnPropertyChanged(nameof(CountMa101Plus));
-                OnPropertyChanged(nameof(SumMa1)); OnPropertyChanged(nameof(SumMa2_9)); OnPropertyChanged(nameof(SumMa10_19));
-                OnPropertyChanged(nameof(SumMa20_49)); OnPropertyChanged(nameof(SumMa50_100)); OnPropertyChanged(nameof(SumMa101Plus));
-                OnPropertyChanged(nameof(PreisMa101PlusText)); OnPropertyChanged(nameof(ZwischenSummeMonat)); OnPropertyChanged(nameof(ZwischenSummeJahr));
-            }
-        }
-
-        private string ToEuro(decimal value) => value.ToString("C", _deCulture);
-        public decimal PreisMa1_Base => 42.00m; public string PreisMa1_Text => ToEuro(PreisMa1_Base);
-        public decimal PreisMa2_9_Base => 30.00m; public string PreisMa2_9_Text => ToEuro(PreisMa2_9_Base);
-        public decimal PreisMa10_19_Base => 24.00m; public string PreisMa10_19_Text => ToEuro(PreisMa10_19_Base);
-        public decimal PreisMa20_49_Base => 22.00m; public string PreisMa20_49_Text => ToEuro(PreisMa20_49_Base);
-        public decimal PreisMa50_100_Base => 20.00m; public string PreisMa50_100_Text => ToEuro(PreisMa50_100_Base);
-        private decimal _preisMa101PlusDynamic; public string PreisMa101PlusText => ToEuro(_preisMa101PlusDynamic);
+        public string AnzahlMitarbeiterText { get => _anzahlMitarbeiter.ToString(); }
 
         public int CountMa1 { get; private set; }
+        public string PreisMa1_Text { get; private set; } = "0,00 €";
+        public string SumMa1 { get; private set; } = "0,00 €";
+
         public int CountMa2_9 { get; private set; }
+        public string PreisMa2_9_Text { get; private set; } = "0,00 €";
+        public string SumMa2_9 { get; private set; } = "0,00 €";
+
         public int CountMa10_19 { get; private set; }
+        public string PreisMa10_19_Text { get; private set; } = "0,00 €";
+        public string SumMa10_19 { get; private set; } = "0,00 €";
+
         public int CountMa20_49 { get; private set; }
+        public string PreisMa20_49_Text { get; private set; } = "0,00 €";
+        public string SumMa20_49 { get; private set; } = "0,00 €";
+
         public int CountMa50_100 { get; private set; }
+        public string PreisMa50_100_Text { get; private set; } = "0,00 €";
+        public string SumMa50_100 { get; private set; } = "0,00 €";
+
         public int CountMa101Plus { get; private set; }
+        public string PreisMa101PlusText { get; private set; } = "0,00 €";
+        public string SumMa101Plus { get; private set; } = "0,00 €";
 
-        public string SumMa1 => ToEuro(CountMa1 * PreisMa1_Base);
-        public string SumMa2_9 => ToEuro(CountMa2_9 * PreisMa2_9_Base);
-        public string SumMa10_19 => ToEuro(CountMa10_19 * PreisMa10_19_Base);
-        public string SumMa20_49 => ToEuro(CountMa20_49 * PreisMa20_49_Base);
-        public string SumMa50_100 => ToEuro(CountMa50_100 * PreisMa50_100_Base);
-        private decimal _sumMa101PlusValue; public string SumMa101Plus => ToEuro(_sumMa101PlusValue);
+        public string ZwischenSummeMonat { get; private set; } = "0,00 €";
+        public string ZwischenSummeJahr { get; private set; } = "0,00 €";
 
-        private decimal _zwischenSummeMonatValue;
-        public string ZwischenSummeMonat => ToEuro(_zwischenSummeMonatValue);
-        public string ZwischenSummeJahr => ToEuro(_zwischenSummeMonatValue * 12);
-
-        private void Recalculate()
+        private void LoadData()
         {
-            int rest = _anzahlMitarbeiter;
-            CountMa1 = rest > 0 ? 1 : 0; rest -= CountMa1;
-            CountMa2_9 = Math.Min(rest, 8); rest -= CountMa2_9;
-            CountMa10_19 = Math.Min(rest, 10); rest -= CountMa10_19;
-            CountMa20_49 = Math.Min(rest, 30); rest -= CountMa20_49;
-            CountMa50_100 = Math.Min(rest, 51); rest -= CountMa50_100;
-            CountMa101Plus = Math.Max(0, rest);
+            var daten = GlobalState.Instance.Daten;
+            var werte = GlobalState.Instance.Werte;
 
-            decimal total = (CountMa1 * PreisMa1_Base) + (CountMa2_9 * PreisMa2_9_Base) + (CountMa10_19 * PreisMa10_19_Base) + (CountMa20_49 * PreisMa20_49_Base) + (CountMa50_100 * PreisMa50_100_Base);
+            // Anzahl holen
+            _anzahlMitarbeiter = daten.AnzahlMitarbeiter;
+            OnPropertyChanged(nameof(AnzahlMitarbeiterText));
 
-            if (CountMa101Plus > 0)
-            {
-                decimal rabatt = (decimal)((_anzahlMitarbeiter - 100) * 0.1);
-                _preisMa101PlusDynamic = Math.Max(20m - rabatt, 15m);
-                _sumMa101PlusValue = CountMa101Plus * _preisMa101PlusDynamic;
-                total += _sumMa101PlusValue;
-            }
-            else { _preisMa101PlusDynamic = 0m; _sumMa101PlusValue = 0m; }
+            // Footer holen
+            var gesamt = _honorarService.BerechneAlles();
+            _jahresHonorar = gesamt.JahresHonorar;
+            OnPropertyChanged(nameof(JahresHonorarText));
+            OnPropertyChanged(nameof(MonatsHonorarText));
 
-            _zwischenSummeMonatValue = total;
+            // Details berechnen
+            var details = _honorarService.BerechneLohnDetails(_anzahlMitarbeiter, werte);
+
+            CountMa1 = details.Count1;
+            PreisMa1_Text = ToEuro(details.Preis1);
+            SumMa1 = ToEuro(details.Sum1);
+
+            CountMa2_9 = details.Count2_9;
+            PreisMa2_9_Text = ToEuro(details.Preis2_9);
+            SumMa2_9 = ToEuro(details.Sum2_9);
+
+            CountMa10_19 = details.Count10_19;
+            PreisMa10_19_Text = ToEuro(details.Preis10_19);
+            SumMa10_19 = ToEuro(details.Sum10_19);
+
+            CountMa20_49 = details.Count20_49;
+            PreisMa20_49_Text = ToEuro(details.Preis20_49);
+            SumMa20_49 = ToEuro(details.Sum20_49);
+
+            CountMa50_100 = details.Count50_100;
+            PreisMa50_100_Text = ToEuro(details.Preis50_100);
+            SumMa50_100 = ToEuro(details.Sum50_100);
+
+            CountMa101Plus = details.Count101Plus;
+            PreisMa101PlusText = ToEuro(details.Preis101Plus);
+            SumMa101Plus = ToEuro(details.Sum101Plus);
+
+            ZwischenSummeMonat = ToEuro(details.MonatGesamt);
+            ZwischenSummeJahr = ToEuro(details.JahrGesamt);
+
+            // Alles updaten
+            OnPropertyChanged(nameof(CountMa1)); OnPropertyChanged(nameof(PreisMa1_Text)); OnPropertyChanged(nameof(SumMa1));
+            OnPropertyChanged(nameof(CountMa2_9)); OnPropertyChanged(nameof(PreisMa2_9_Text)); OnPropertyChanged(nameof(SumMa2_9));
+            OnPropertyChanged(nameof(CountMa10_19)); OnPropertyChanged(nameof(PreisMa10_19_Text)); OnPropertyChanged(nameof(SumMa10_19));
+            OnPropertyChanged(nameof(CountMa20_49)); OnPropertyChanged(nameof(PreisMa20_49_Text)); OnPropertyChanged(nameof(SumMa20_49));
+            OnPropertyChanged(nameof(CountMa50_100)); OnPropertyChanged(nameof(PreisMa50_100_Text)); OnPropertyChanged(nameof(SumMa50_100));
+            OnPropertyChanged(nameof(CountMa101Plus)); OnPropertyChanged(nameof(PreisMa101PlusText)); OnPropertyChanged(nameof(SumMa101Plus));
+            OnPropertyChanged(nameof(ZwischenSummeMonat)); OnPropertyChanged(nameof(ZwischenSummeJahr));
         }
+
+        private string ToEuro(decimal d) => d.ToString("C", _deCulture);
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
