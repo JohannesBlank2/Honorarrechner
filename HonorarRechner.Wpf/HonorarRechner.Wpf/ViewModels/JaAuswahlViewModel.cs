@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using System.Windows;
 
 namespace HonorarRechner.Wpf.ViewModels
 {
@@ -14,43 +15,41 @@ namespace HonorarRechner.Wpf.ViewModels
         public JaAuswahlViewModel()
         {
             ZurueckCommand = new RelayCommand(_ => ZurueckRequested?.Invoke());
-
-            // Direkte Commands für die "zum..." Links
             OpenEuerCommand = new RelayCommand(_ => OpenEuerRequested?.Invoke());
             OpenBilanzCommand = new RelayCommand(_ => OpenBilanzRequested?.Invoke());
+            OpenExcelCommand = new RelayCommand(_ => MessageBox.Show("Open Excel"));
+            UpdateExcelCommand = new RelayCommand(_ => MessageBox.Show("Update Excel"));
         }
 
-        // --- Auswahl Status (Standardmäßig alles FALSE) ---
+        // --- Shell Properties ---
+        public string ViewTitle => "Jahresabschluss (JA)";
+        public string JahresHonorarText => "Jahres Honorar: 0,00 €";
+        public string MonatsHonorarText => "Monats Honorar: 0,00 €";
+
+        // --- Commands ---
+        public ICommand ZurueckCommand { get; }
+        public ICommand OpenEuerCommand { get; }
+        public ICommand OpenBilanzCommand { get; }
+        public ICommand OpenExcelCommand { get; }
+        public ICommand UpdateExcelCommand { get; }
+        public ICommand? WeiterCommand => null;
+
+        // --- Logic ---
         private bool _isEuerSelected;
         public bool IsEuerSelected
         {
             get => _isEuerSelected;
-            set
-            {
-                if (Set(ref _isEuerSelected, value))
-                {
-                    if (value) IsBilanzSelected = false;
-                }
-            }
+            set { if (Set(ref _isEuerSelected, value)) { if (value) IsBilanzSelected = false; } }
         }
 
         private bool _isBilanzSelected;
         public bool IsBilanzSelected
         {
             get => _isBilanzSelected;
-            set
-            {
-                if (Set(ref _isBilanzSelected, value))
-                {
-                    if (value) IsEuerSelected = false;
-                    // Wenn Bilanz abgewählt wird, nichts tun, 
-                    // wenn gewählt, könnte man hier einen Standard für Sub-Typ setzen, lassen wir aber offen.
-                }
-            }
+            set { if (Set(ref _isBilanzSelected, value)) { if (value) IsEuerSelected = false; } }
         }
 
-        // --- Unterauswahl Bilanz ---
-        private bool _isEinzelunternehmen = true; // Standard innerhalb der Bilanz-Gruppe ist okay, oder auch false setzen
+        private bool _isEinzelunternehmen = true;
         public bool IsEinzelunternehmen
         {
             get => _isEinzelunternehmen;
@@ -63,11 +62,6 @@ namespace HonorarRechner.Wpf.ViewModels
             get => _isGesellschaft;
             set { if (Set(ref _isGesellschaft, value)) { if (value) IsEinzelunternehmen = false; } }
         }
-
-        // --- Navigation ---
-        public ICommand ZurueckCommand { get; }
-        public ICommand OpenEuerCommand { get; }
-        public ICommand OpenBilanzCommand { get; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)

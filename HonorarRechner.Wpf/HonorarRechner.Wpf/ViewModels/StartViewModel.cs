@@ -13,14 +13,25 @@ namespace HonorarRechner.Wpf.ViewModels
         public StartViewModel()
         {
             SelectMandatCommand = new RelayCommand(p => SelectMandat(p as string));
-            OpenExcelCommand = new RelayCommand(_ => OpenExcel());
-            UpdateExcelCommand = new RelayCommand(_ => UpdateExcel());
-
+            OpenExcelCommand = new RelayCommand(_ => MessageBox.Show("Excel öffnen"));
+            UpdateExcelCommand = new RelayCommand(_ => MessageBox.Show("Excel update"));
             JahresHonorar = 0m;
         }
 
-        #region Properties
+        // --- Shell Properties ---
+        public string ViewTitle => "Mandatstyp";
+        public string JahresHonorarText => $"Jahres Honorar: {JahresHonorar:C}";
+        public string MonatsHonorarText => $"Monats Honorar: {(JahresHonorar / 12m):C}";
 
+        // --- Commands ---
+        public ICommand SelectMandatCommand { get; }
+        public ICommand OpenExcelCommand { get; }
+        public ICommand UpdateExcelCommand { get; }
+        // Startseite hat kein Zurück/Weiter im Footer (dafür Buttons in der Mitte)
+        public ICommand? ZurueckCommand => null;
+        public ICommand? WeiterCommand => null;
+
+        // --- Logic ---
         private string _selectedMandatTyp = string.Empty;
         public string SelectedMandatTyp
         {
@@ -42,87 +53,21 @@ namespace HonorarRechner.Wpf.ViewModels
             }
         }
 
-        public string JahresHonorarText =>
-            $"Jahres Honorar: {JahresHonorar:C}";
-
-        public string MonatsHonorarText =>
-            $"Monats Honorar: {(JahresHonorar / 12m):C}";
-
-        #endregion
-
-        #region Commands
-
-        public ICommand SelectMandatCommand { get; }
-        public ICommand OpenExcelCommand { get; }
-        public ICommand UpdateExcelCommand { get; }
-
         private void SelectMandat(string? typ)
         {
-            if (string.IsNullOrWhiteSpace(typ))
-                return;
-
+            if (string.IsNullOrWhiteSpace(typ)) return;
             SelectedMandatTyp = typ;
             MandatSelected?.Invoke(typ);
         }
 
-        private void OpenExcel()
-        {
-            MessageBox.Show("Excel öffnen – wird später mit Service verdrahtet.",
-                "Info", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void UpdateExcel()
-        {
-            MessageBox.Show("Excel neu einlesen – wird später mit Service verdrahtet.",
-                "Info", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        #endregion
-
-        #region INotifyPropertyChanged
-
         public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected bool SetField<T>(ref T field, T value,
-            [CallerMemberName] string? propertyName = null)
+        protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
         {
             if (Equals(field, value)) return false;
             field = value;
             OnPropertyChanged(propertyName);
             return true;
         }
-
-        protected void OnPropertyChanged([CallerMemberName] string? name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
-
-        #endregion
-    }
-
-    /// <summary>
-    /// Einfacher RelayCommand für MVVM.
-    /// </summary>
-    public class RelayCommand : ICommand
-    {
-        private readonly Action<object?> _execute;
-        private readonly Predicate<object?>? _canExecute;
-
-        public RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
-        {
-            _execute = execute;
-            _canExecute = canExecute;
-        }
-
-        public bool CanExecute(object? parameter) =>
-            _canExecute?.Invoke(parameter) ?? true;
-
-        public void Execute(object? parameter) =>
-            _execute(parameter);
-
-        public event EventHandler? CanExecuteChanged;
-
-        public void RaiseCanExecuteChanged() =>
-            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+        protected void OnPropertyChanged([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }

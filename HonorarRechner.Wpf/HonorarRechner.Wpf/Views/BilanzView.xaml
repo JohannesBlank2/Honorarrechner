@@ -1,13 +1,11 @@
 ﻿<UserControl x:Class="HonorarRechner.Wpf.Views.BilanzView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignHeight="750" d:DesignWidth="1300">
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignHeight="500" d:DesignWidth="1000">
 
     <UserControl.Resources>
-        <DropShadowEffect x:Key="CardShadow" BlurRadius="20" ShadowDepth="2" Opacity="0.25" Direction="270"/>
-
         <Style x:Key="RowLabel" TargetType="TextBlock">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="16"/>
@@ -39,180 +37,122 @@
         </Style>
     </UserControl.Resources>
 
-    <UserControl.Triggers>
-        <EventTrigger RoutedEvent="Loaded">
-            <BeginStoryboard>
-                <Storyboard>
-                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.4"/>
-                    <ThicknessAnimation Storyboard.TargetProperty="Margin" From="30,50,30,30" To="30,30,30,30" Duration="0:0:0.4" DecelerationRatio="0.9"/>
-                </Storyboard>
-            </BeginStoryboard>
-        </EventTrigger>
-    </UserControl.Triggers>
-
     <Grid>
-        <Border Background="#0077BE" CornerRadius="40" Margin="30" Padding="40" Effect="{StaticResource CardShadow}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="40"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-                <Grid Grid.Row="0" Margin="0,0,0,20">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" Width="100" Height="100" CornerRadius="20" Background="White" Margin="0,0,20,0">
-                        <Image Source="/SFS Logo.png" Stretch="Uniform"/>
-                    </Border>
-                    <TextBlock Grid.Column="1" Text="Bilanz" FontSize="36" FontWeight="Bold" Foreground="White" TextDecorations="Underline" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                </Grid>
-
-                <Grid Grid.Row="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="40"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0">
-                        <Grid Margin="0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="80"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="Aufstellung des Jahresabschlusses" Style="{StaticResource RowLabel}"/>
-                                <TextBlock Text="30/10" Foreground="#DDFFFFFF"/>
-                            </StackPanel>
-                            <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
-                            <TextBlock Grid.Column="2" Text="{Binding AufstellungText}" Style="{StaticResource RowValue}"/>
-                        </Grid>
-                        <Grid Margin="0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="80"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="Erstellung des Antrags" Style="{StaticResource RowLabel}"/>
-                                <TextBlock Text="5/10" Foreground="#DDFFFFFF"/>
-                            </StackPanel>
-                            <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
-                            <TextBlock Grid.Column="2" Text="{Binding AntragText}" Style="{StaticResource RowValue}"/>
-                        </Grid>
-                        <Grid Margin="0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="80"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="Entwicklung einer Steuerbilanz" Style="{StaticResource RowLabel}"/>
-                                <TextBlock Text="5/10" Foreground="#DDFFFFFF"/>
-                            </StackPanel>
-                            <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
-                            <TextBlock Grid.Column="2" Text="{Binding SteuerbilanzText}" Style="{StaticResource RowValue}"/>
-                        </Grid>
-                        <Grid Margin="0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="80"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="Körperschaftssteuererklärung" Style="{StaticResource RowLabel}"/>
-                                <TextBlock Text="3/10" Foreground="#DDFFFFFF"/>
-                            </StackPanel>
-                            <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
-                            <TextBlock Grid.Column="2" Text="{Binding KoerperschaftText}" Style="{StaticResource RowValue}"/>
-                        </Grid>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="2">
-                        <Grid Margin="0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="80"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="Umsatzsteuererklärung für das KJ" Style="{StaticResource RowLabel}"/>
-                                <TextBlock Text="3/10" Foreground="#DDFFFFFF"/>
-                            </StackPanel>
-                            <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
-                            <TextBlock Grid.Column="2" Text="{Binding UstText}" Style="{StaticResource RowValue}"/>
-                        </Grid>
-                        <Grid Margin="0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="80"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="Erklärung zur Gewerbesteuer" Style="{StaticResource RowLabel}"/>
-                                <TextBlock Text="3/10" Foreground="#DDFFFFFF"/>
-                            </StackPanel>
-                            <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
-                            <TextBlock Grid.Column="2" Text="{Binding GewerbeText}" Style="{StaticResource RowValue}"/>
-                        </Grid>
-                        <Grid Margin="0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="80"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="Bescheide" Style="{StaticResource RowLabel}"/>
-                                <TextBlock Text="pro Bescheid 25€" Foreground="#DDFFFFFF"/>
-                            </StackPanel>
-                            <TextBox Grid.Column="1" Style="{StaticResource InputBox}" Text="{Binding BescheidAnzahl}" TextAlignment="Center"/>
-                            <TextBlock Grid.Column="2" Text="{Binding BescheidText}" Style="{StaticResource RowValue}"/>
-                        </Grid>
-                        <Grid Margin="0,20,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="{Binding EBilanzText, StringFormat='E-Bilanz: {0}'}" Style="{StaticResource RowLabel}"/>
-                                <TextBlock Text="Fixbetrag" Foreground="#AAFFFFFF" FontSize="12"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-                                <TextBlock Text="{Binding OffenlegungText, StringFormat='Offenlegung: {0}'}" Style="{StaticResource RowLabel}"/>
-                                <TextBlock Text="Fixbetrag" Foreground="#AAFFFFFF" FontSize="12" HorizontalAlignment="Right"/>
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-                </Grid>
-
-                <Grid Grid.Row="2" Margin="0,20,0,0">
-                    <Button Content="Zurück" Command="{Binding ZurueckCommand}" Width="150" Height="45" FontSize="16" Background="#20FFFFFF" Foreground="White">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="{TemplateBinding Background}" CornerRadius="22" BorderBrush="White" BorderThickness="1">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
-
-                    <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-                        <TextBlock Text="min. 0,00 €" Foreground="#AAFFFFFF" HorizontalAlignment="Right" FontSize="12"/>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <TextBlock Text="monatlich: " Foreground="#DDFFFFFF" FontSize="16" VerticalAlignment="Bottom" Margin="0,0,10,2"/>
-                            <TextBlock Text="{Binding ZwischenSummeMonat}" Foreground="White" FontSize="24" FontWeight="Bold"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <TextBlock Text="jährlich: " Foreground="#DDFFFFFF" FontSize="16" VerticalAlignment="Bottom" Margin="0,0,10,2"/>
-                            <TextBlock Text="{Binding ZwischenSummeJahr}" Foreground="White" FontSize="24" FontWeight="Bold"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Grid>
+        <StackPanel Grid.Column="0">
+            <Grid Margin="0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="80"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="Aufstellung des Jahresabschlusses" Style="{StaticResource RowLabel}"/>
+                    <TextBlock Text="30/10" Foreground="#DDFFFFFF"/>
+                </StackPanel>
+                <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
+                <TextBlock Grid.Column="2" Text="{Binding AufstellungText}" Style="{StaticResource RowValue}"/>
             </Grid>
-        </Border>
+            <Grid Margin="0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="80"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="Erstellung des Antrags" Style="{StaticResource RowLabel}"/>
+                    <TextBlock Text="5/10" Foreground="#DDFFFFFF"/>
+                </StackPanel>
+                <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
+                <TextBlock Grid.Column="2" Text="{Binding AntragText}" Style="{StaticResource RowValue}"/>
+            </Grid>
+            <Grid Margin="0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="80"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="Entwicklung einer Steuerbilanz" Style="{StaticResource RowLabel}"/>
+                    <TextBlock Text="5/10" Foreground="#DDFFFFFF"/>
+                </StackPanel>
+                <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
+                <TextBlock Grid.Column="2" Text="{Binding SteuerbilanzText}" Style="{StaticResource RowValue}"/>
+            </Grid>
+            <Grid Margin="0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="80"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="Körperschaftssteuererklärung" Style="{StaticResource RowLabel}"/>
+                    <TextBlock Text="3/10" Foreground="#DDFFFFFF"/>
+                </StackPanel>
+                <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
+                <TextBlock Grid.Column="2" Text="{Binding KoerperschaftText}" Style="{StaticResource RowValue}"/>
+            </Grid>
+        </StackPanel>
+
+        <StackPanel Grid.Column="2">
+            <Grid Margin="0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="80"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="Umsatzsteuererklärung für das KJ" Style="{StaticResource RowLabel}"/>
+                    <TextBlock Text="3/10" Foreground="#DDFFFFFF"/>
+                </StackPanel>
+                <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
+                <TextBlock Grid.Column="2" Text="{Binding UstText}" Style="{StaticResource RowValue}"/>
+            </Grid>
+            <Grid Margin="0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="80"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="Erklärung zur Gewerbesteuer" Style="{StaticResource RowLabel}"/>
+                    <TextBlock Text="3/10" Foreground="#DDFFFFFF"/>
+                </StackPanel>
+                <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
+                <TextBlock Grid.Column="2" Text="{Binding GewerbeText}" Style="{StaticResource RowValue}"/>
+            </Grid>
+            <Grid Margin="0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="80"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="Bescheide" Style="{StaticResource RowLabel}"/>
+                    <TextBlock Text="pro Bescheid 25€" Foreground="#DDFFFFFF"/>
+                </StackPanel>
+                <TextBox Grid.Column="1" Style="{StaticResource InputBox}" Text="{Binding BescheidAnzahl}" TextAlignment="Center"/>
+                <TextBlock Grid.Column="2" Text="{Binding BescheidText}" Style="{StaticResource RowValue}"/>
+            </Grid>
+            <Grid Margin="0,20,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="{Binding EBilanzText, StringFormat='E-Bilanz: {0}'}" Style="{StaticResource RowLabel}"/>
+                    <TextBlock Text="Fixbetrag" Foreground="#AAFFFFFF" FontSize="12"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                    <TextBlock Text="{Binding OffenlegungText, StringFormat='Offenlegung: {0}'}" Style="{StaticResource RowLabel}"/>
+                    <TextBlock Text="Fixbetrag" Foreground="#AAFFFFFF" FontSize="12" HorizontalAlignment="Right"/>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
     </Grid>
 </UserControl>

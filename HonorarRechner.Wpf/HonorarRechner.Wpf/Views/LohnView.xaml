@@ -3,18 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignHeight="750" d:DesignWidth="1300">
+             mc:Ignorable="d" d:DesignHeight="500" d:DesignWidth="1000">
 
     <UserControl.Resources>
-        <DropShadowEffect x:Key="CardShadow" BlurRadius="25" ShadowDepth="4" Opacity="0.35" Direction="270"/>
-
         <Style x:Key="RowLabel" TargetType="TextBlock">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,5"/>
         </Style>
-
         <Style x:Key="RowValue" TargetType="TextBlock">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="18"/>
@@ -23,14 +20,12 @@
             <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="Margin" Value="0,5"/>
         </Style>
-
         <Style x:Key="HeaderLabel" TargetType="TextBlock">
             <Setter Property="Foreground" Value="#DDFFFFFF"/>
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="Margin" Value="0,0,0,15"/>
             <Setter Property="TextDecorations" Value="Underline"/>
         </Style>
-
         <Style x:Key="InputBox" TargetType="TextBox">
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="Padding" Value="5"/>
@@ -50,132 +45,65 @@
         </Style>
     </UserControl.Resources>
 
-    <UserControl.Triggers>
-        <EventTrigger RoutedEvent="Loaded">
-            <BeginStoryboard>
-                <Storyboard>
-                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.4"/>
-                    <ThicknessAnimation Storyboard.TargetProperty="Margin" From="30,50,30,30" To="30,30,30,30" Duration="0:0:0.4" DecelerationRatio="0.9"/>
-                </Storyboard>
-            </BeginStoryboard>
-        </EventTrigger>
-    </UserControl.Triggers>
+    <Grid VerticalAlignment="Center" MaxWidth="1100" HorizontalAlignment="Center">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2.2*"/>
+            <ColumnDefinition Width="0.8*"/>
+            <ColumnDefinition Width="1.5*"/>
+            <ColumnDefinition Width="1.2*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-    <Grid>
-        <Border Background="#0077BE" CornerRadius="40" Margin="20" Padding="30" Effect="{StaticResource CardShadow}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Center">
+            <TextBlock Text="Anzahl Mitarbeiter:" Foreground="White" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,15,0"/>
+            <TextBox Text="{Binding AnzahlMitarbeiterText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputBox}" TextAlignment="Center"/>
+        </StackPanel>
 
-                <Grid Grid.Row="0" Margin="0,0,0,20">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" Width="100" Height="100" CornerRadius="20" Background="White" Margin="0,0,20,0">
-                        <Image Source="/SFS Logo.png" Stretch="Uniform"/>
-                    </Border>
-                    <TextBlock Grid.Column="1" Text="Lohnbuchhaltung" FontSize="36" FontWeight="Bold" Foreground="White" 
-                               TextDecorations="Underline" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                </Grid>
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="Staffel" Style="{StaticResource HeaderLabel}"/>
+        <TextBlock Grid.Row="2" Grid.Column="1" Text="Anzahl" Style="{StaticResource HeaderLabel}" HorizontalAlignment="Center"/>
+        <TextBlock Grid.Row="2" Grid.Column="2" Text="Preis / MA" Style="{StaticResource HeaderLabel}" HorizontalAlignment="Right" Margin="0,0,20,0"/>
+        <TextBlock Grid.Row="2" Grid.Column="3" Text="Summe" Style="{StaticResource HeaderLabel}" HorizontalAlignment="Right"/>
 
-                <Grid Grid.Row="1" VerticalAlignment="Center" MaxWidth="1100" HorizontalAlignment="Center">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2.2*"/>
-                        <ColumnDefinition Width="0.8*"/>
-                        <ColumnDefinition Width="1.5*"/>
-                        <ColumnDefinition Width="1.2*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="20"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="20"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+        <TextBlock Grid.Row="3" Grid.Column="0" Text="1. Mitarbeiter" Style="{StaticResource RowLabel}"/>
+        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding CountMa1}" Style="{StaticResource RowLabel}" HorizontalAlignment="Center"/>
+        <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding PreisMa1_Text}" Style="{StaticResource RowValue}" Margin="0,4,20,4"/>
+        <TextBlock Grid.Row="3" Grid.Column="3" Text="{Binding SumMa1}" Style="{StaticResource RowValue}"/>
 
-                    <StackPanel Grid.Row="0" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Center">
-                        <TextBlock Text="Anzahl Mitarbeiter:" Foreground="White" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,15,0"/>
-                        <TextBox Text="{Binding AnzahlMitarbeiterText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputBox}" TextAlignment="Center"/>
-                    </StackPanel>
+        <TextBlock Grid.Row="4" Grid.Column="0" Text="2. bis 9. Mitarbeiter" Style="{StaticResource RowLabel}"/>
+        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding CountMa2_9}" Style="{StaticResource RowLabel}" HorizontalAlignment="Center"/>
+        <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding PreisMa2_9_Text}" Style="{StaticResource RowValue}" Margin="0,4,20,4"/>
+        <TextBlock Grid.Row="4" Grid.Column="3" Text="{Binding SumMa2_9}" Style="{StaticResource RowValue}"/>
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Staffel" Style="{StaticResource HeaderLabel}"/>
-                    <TextBlock Grid.Row="2" Grid.Column="1" Text="Anzahl" Style="{StaticResource HeaderLabel}" HorizontalAlignment="Center"/>
-                    <TextBlock Grid.Row="2" Grid.Column="2" Text="Preis / MA" Style="{StaticResource HeaderLabel}" HorizontalAlignment="Right" Margin="0,0,20,0"/>
-                    <TextBlock Grid.Row="2" Grid.Column="3" Text="Summe" Style="{StaticResource HeaderLabel}" HorizontalAlignment="Right"/>
+        <TextBlock Grid.Row="5" Grid.Column="0" Text="10. bis 19. Mitarbeiter" Style="{StaticResource RowLabel}"/>
+        <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding CountMa10_19}" Style="{StaticResource RowLabel}" HorizontalAlignment="Center"/>
+        <TextBlock Grid.Row="5" Grid.Column="2" Text="{Binding PreisMa10_19_Text}" Style="{StaticResource RowValue}" Margin="0,4,20,4"/>
+        <TextBlock Grid.Row="5" Grid.Column="3" Text="{Binding SumMa10_19}" Style="{StaticResource RowValue}"/>
 
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="1. Mitarbeiter" Style="{StaticResource RowLabel}"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding CountMa1}" Style="{StaticResource RowLabel}" HorizontalAlignment="Center"/>
-                    <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding PreisMa1_Text}" Style="{StaticResource RowValue}" Margin="0,4,20,4"/>
-                    <TextBlock Grid.Row="3" Grid.Column="3" Text="{Binding SumMa1}" Style="{StaticResource RowValue}"/>
+        <TextBlock Grid.Row="6" Grid.Column="0" Text="20. bis 49. Mitarbeiter" Style="{StaticResource RowLabel}"/>
+        <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding CountMa20_49}" Style="{StaticResource RowLabel}" HorizontalAlignment="Center"/>
+        <TextBlock Grid.Row="6" Grid.Column="2" Text="{Binding PreisMa20_49_Text}" Style="{StaticResource RowValue}" Margin="0,4,20,4"/>
+        <TextBlock Grid.Row="6" Grid.Column="3" Text="{Binding SumMa20_49}" Style="{StaticResource RowValue}"/>
 
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="2. bis 9. Mitarbeiter" Style="{StaticResource RowLabel}"/>
-                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding CountMa2_9}" Style="{StaticResource RowLabel}" HorizontalAlignment="Center"/>
-                    <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding PreisMa2_9_Text}" Style="{StaticResource RowValue}" Margin="0,4,20,4"/>
-                    <TextBlock Grid.Row="4" Grid.Column="3" Text="{Binding SumMa2_9}" Style="{StaticResource RowValue}"/>
+        <TextBlock Grid.Row="7" Grid.Column="0" Text="50. bis 100. Mitarbeiter" Style="{StaticResource RowLabel}"/>
+        <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding CountMa50_100}" Style="{StaticResource RowLabel}" HorizontalAlignment="Center"/>
+        <TextBlock Grid.Row="7" Grid.Column="2" Text="{Binding PreisMa50_100_Text}" Style="{StaticResource RowValue}" Margin="0,4,20,4"/>
+        <TextBlock Grid.Row="7" Grid.Column="3" Text="{Binding SumMa50_100}" Style="{StaticResource RowValue}"/>
 
-                    <TextBlock Grid.Row="5" Grid.Column="0" Text="10. bis 19. Mitarbeiter" Style="{StaticResource RowLabel}"/>
-                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding CountMa10_19}" Style="{StaticResource RowLabel}" HorizontalAlignment="Center"/>
-                    <TextBlock Grid.Row="5" Grid.Column="2" Text="{Binding PreisMa10_19_Text}" Style="{StaticResource RowValue}" Margin="0,4,20,4"/>
-                    <TextBlock Grid.Row="5" Grid.Column="3" Text="{Binding SumMa10_19}" Style="{StaticResource RowValue}"/>
-
-                    <TextBlock Grid.Row="6" Grid.Column="0" Text="20. bis 49. Mitarbeiter" Style="{StaticResource RowLabel}"/>
-                    <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding CountMa20_49}" Style="{StaticResource RowLabel}" HorizontalAlignment="Center"/>
-                    <TextBlock Grid.Row="6" Grid.Column="2" Text="{Binding PreisMa20_49_Text}" Style="{StaticResource RowValue}" Margin="0,4,20,4"/>
-                    <TextBlock Grid.Row="6" Grid.Column="3" Text="{Binding SumMa20_49}" Style="{StaticResource RowValue}"/>
-
-                    <TextBlock Grid.Row="7" Grid.Column="0" Text="50. bis 100. Mitarbeiter" Style="{StaticResource RowLabel}"/>
-                    <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding CountMa50_100}" Style="{StaticResource RowLabel}" HorizontalAlignment="Center"/>
-                    <TextBlock Grid.Row="7" Grid.Column="2" Text="{Binding PreisMa50_100_Text}" Style="{StaticResource RowValue}" Margin="0,4,20,4"/>
-                    <TextBlock Grid.Row="7" Grid.Column="3" Text="{Binding SumMa50_100}" Style="{StaticResource RowValue}"/>
-
-                    <TextBlock Grid.Row="8" Grid.Column="0" Text="ab 101. Mitarbeiter" Style="{StaticResource RowLabel}"/>
-                    <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding CountMa101Plus}" Style="{StaticResource RowLabel}" HorizontalAlignment="Center"/>
-                    <TextBlock Grid.Row="8" Grid.Column="2" Text="{Binding PreisMa101PlusText}" Style="{StaticResource RowValue}" Foreground="#AAFFFFFF" FontStyle="Italic" Margin="0,4,20,4"/>
-                    <TextBlock Grid.Row="8" Grid.Column="3" Text="{Binding SumMa101Plus}" Style="{StaticResource RowValue}"/>
-
-                    <Border Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="4" BorderBrush="#80FFFFFF" BorderThickness="0,1,0,0" Padding="0,0,0,0">
-                        <StackPanel HorizontalAlignment="Right">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,5">
-                                <TextBlock Text="monatlich: " Foreground="#DDFFFFFF" FontSize="18" VerticalAlignment="Bottom" Margin="0,0,10,2"/>
-                                <TextBlock Text="{Binding ZwischenSummeMonat}" Foreground="White" FontSize="28" FontWeight="Bold"/>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <TextBlock Text="jährlich: " Foreground="#DDFFFFFF" FontSize="18" VerticalAlignment="Bottom" Margin="0,0,10,2"/>
-                                <TextBlock Text="{Binding ZwischenSummeJahr}" Foreground="White" FontSize="28" FontWeight="Bold"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-                </Grid>
-
-                <Grid Grid.Row="2" Margin="0,20,0,0">
-                    <Button Content="Zurück" Command="{Binding ZurueckCommand}" 
-                            Width="150" Height="45" FontSize="16" HorizontalAlignment="Left"
-                            Background="#20FFFFFF" Foreground="White">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="{TemplateBinding Background}" CornerRadius="22" BorderBrush="White" BorderThickness="1">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#40FFFFFF"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
-                </Grid>
-            </Grid>
-        </Border>
+        <TextBlock Grid.Row="8" Grid.Column="0" Text="ab 101. Mitarbeiter" Style="{StaticResource RowLabel}"/>
+        <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding CountMa101Plus}" Style="{StaticResource RowLabel}" HorizontalAlignment="Center"/>
+        <TextBlock Grid.Row="8" Grid.Column="2" Text="{Binding PreisMa101PlusText}" Style="{StaticResource RowValue}" Foreground="#AAFFFFFF" FontStyle="Italic" Margin="0,4,20,4"/>
+        <TextBlock Grid.Row="8" Grid.Column="3" Text="{Binding SumMa101Plus}" Style="{StaticResource RowValue}"/>
     </Grid>
 </UserControl>
