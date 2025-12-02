@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace HonorarRechner.Core.Models
+﻿namespace HonorarRechner.Core.Models
 {
     public class UnternehmensDaten
     {
@@ -16,11 +10,16 @@ namespace HonorarRechner.Core.Models
         public bool IstBargeldGewerbe { get; set; }
         public bool IstOnlineHaendler { get; set; }
 
-        // später kommen hier auch die Checkboxen für FiBu / JA / Lohn usw. mit rein
+        // Leistungen
         public bool HatFiBu { get; set; }
+
         public bool HatJahresabschluss { get; set; }
+        public string JahresabschlussTyp { get; set; } = "NIX"; // "Bilanz" oder "EÜR"
+        public string UnternehmensArt { get; set; } = "NIX"; // "EU" oder "GESELLSCHAFT"
+
+        public bool HatUeberschussRechnung { get; set; } // Für EÜR (Checkbox UdB)
+
         public bool HatLohn { get; set; }
         public bool IstSelbstbucher { get; set; }
     }
 }
-

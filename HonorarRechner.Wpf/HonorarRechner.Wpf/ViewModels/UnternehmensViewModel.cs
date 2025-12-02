@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
+using HonorarRechner.Core.Models;
+using HonorarRechner.Core.Services;
 
 namespace HonorarRechner.Wpf.ViewModels
 {
@@ -11,16 +13,25 @@ namespace HonorarRechner.Wpf.ViewModels
         public event Action? ZurueckRequested;
         public event Action? WeiterRequested;
 
+        private readonly HonorarService _honorarService;
+
         public UnternehmensViewModel()
         {
+            _honorarService = new HonorarService();
+
+            // Lade vorhandene Daten aus dem GlobalState (falls man zurückkommt)
+            LoadFromGlobalState();
+
             OpenExcelCommand = new RelayCommand(_ => MessageBox.Show("Open Excel"));
             UpdateExcelCommand = new RelayCommand(_ => MessageBox.Show("Update Excel"));
             ZurueckCommand = new RelayCommand(_ => ZurueckRequested?.Invoke());
             WeiterCommand = new RelayCommand(_ => WeiterRequested?.Invoke());
-            JahresHonorar = 0m;
+
+            // Einmalig berechnen beim Start (falls Daten schon da sind)
+            Recalculate();
         }
 
-        // --- Shell Properties ---
+        // --- Shell ---
         public string ViewTitle => "Unternehmensdaten";
         public string JahresHonorarText => $"Jahres Honorar: {JahresHonorar:C}";
         public string MonatsHonorarText => $"Monats Honorar: {(JahresHonorar / 12m):C}";
@@ -39,23 +50,119 @@ namespace HonorarRechner.Wpf.ViewModels
             set { if (SetField(ref _jahresHonorar, value)) { OnPropertyChanged(nameof(JahresHonorarText)); OnPropertyChanged(nameof(MonatsHonorarText)); } }
         }
 
+        // Wir nutzen Strings für die Eingabe, parsen sie aber sofort
         private string _umsatzImJahr = "";
-        public string UmsatzImJahr { get => _umsatzImJahr; set => SetField(ref _umsatzImJahr, value); }
+        public string UmsatzImJahr
+        {
+            get => _umsatzImJahr;
+            set
+            {
+                if (SetField(ref _umsatzImJahr, value))
+                {
+                    GlobalState.Instance.Daten.UmsatzImJahr = ParseDecimal(value);
+                    Recalculate();
+                }
+            }
+        }
 
         private string _bilanzsumme = "";
-        public string Bilanzsumme { get => _bilanzsumme; set => SetField(ref _bilanzsumme, value); }
+        public string Bilanzsumme
+        {
+            get => _bilanzsumme;
+            set
+            {
+                if (SetField(ref _bilanzsumme, value))
+                {
+                    GlobalState.Instance.Daten.Bilanzsumme = ParseDecimal(value);
+                    Recalculate();
+                }
+            }
+        }
 
         private string _jahresueberschuss = "";
-        public string Jahresueberschuss { get => _jahresueberschuss; set => SetField(ref _jahresueberschuss, value); }
+        public string Jahresueberschuss
+        {
+            get => _jahresueberschuss;
+            set
+            {
+                if (SetField(ref _jahresueberschuss, value))
+                {
+                    GlobalState.Instance.Daten.Jahresueberschuss = ParseDecimal(value);
+                    Recalculate();
+                }
+            }
+        }
 
         private string _anzahlMitarbeiter = "";
-        public string AnzahlMitarbeiter { get => _anzahlMitarbeiter; set => SetField(ref _anzahlMitarbeiter, value); }
+        public string AnzahlMitarbeiter
+        {
+            get => _anzahlMitarbeiter;
+            set
+            {
+                if (SetField(ref _anzahlMitarbeiter, value))
+                {
+                    int.TryParse(value, out int result);
+                    GlobalState.Instance.Daten.AnzahlMitarbeiter = result;
+                    Recalculate();
+                }
+            }
+        }
 
         private bool _istBargeldGewerbe;
-        public bool IstBargeldGewerbe { get => _istBargeldGewerbe; set => SetField(ref _istBargeldGewerbe, value); }
+        public bool IstBargeldGewerbe
+        {
+            get => _istBargeldGewerbe;
+            set
+            {
+                if (SetField(ref _istBargeldGewerbe, value))
+                {
+                    GlobalState.Instance.Daten.IstBargeldGewerbe = value;
+                    if (value) IstOnlineHaendler = false; // Toggle logic aus Form1
+                    Recalculate();
+                }
+            }
+        }
 
         private bool _istOnlineHaendler;
-        public bool IstOnlineHaendler { get => _istOnlineHaendler; set => SetField(ref _istOnlineHaendler, value); }
+        public bool IstOnlineHaendler
+        {
+            get => _istOnlineHaendler;
+            set
+            {
+                if (SetField(ref _istOnlineHaendler, value))
+                {
+                    GlobalState.Instance.Daten.IstOnlineHaendler = value;
+                    if (value) IstBargeldGewerbe = false;
+                    Recalculate();
+                }
+            }
+        }
+
+        private void Recalculate()
+        {
+            var ergebnis = _honorarService.BerechneAlles();
+            JahresHonorar = ergebnis.JahresHonorar;
+        }
+
+        private void LoadFromGlobalState()
+        {
+            var d = GlobalState.Instance.Daten;
+            _umsatzImJahr = d.UmsatzImJahr > 0 ? d.UmsatzImJahr.ToString("N0") : "";
+            _bilanzsumme = d.Bilanzsumme > 0 ? d.Bilanzsumme.ToString("N0") : "";
+            _jahresueberschuss = d.Jahresueberschuss > 0 ? d.Jahresueberschuss.ToString("N0") : "";
+            _anzahlMitarbeiter = d.AnzahlMitarbeiter > 0 ? d.AnzahlMitarbeiter.ToString() : "";
+            _istBargeldGewerbe = d.IstBargeldGewerbe;
+            _istOnlineHaendler = d.IstOnlineHaendler;
+        }
+
+        private decimal ParseDecimal(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return 0m;
+            // Entferne Tausendertrennzeichen und Euro-Zeichen
+            string clean = input.Replace(".", "").Replace("€", "").Trim();
+            if (decimal.TryParse(clean, out decimal res)) return res;
+            return 0m;
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? name = null)
