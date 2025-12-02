@@ -10,14 +10,17 @@ namespace HonorarRechner.Wpf.ViewModels
         public event Action? ZurueckRequested;
         public event Action? WeiterRequested;
         public event Action? NavigateToFibuRequested;
-        public event Action? NavigateToJaRequested; // NEU
+        public event Action? NavigateToJaRequested;
+        public event Action? NavigateToLohnRequested; // NEU
 
         public LeistungenViewModel()
         {
             ZurueckCommand = new RelayCommand(_ => ZurueckRequested?.Invoke());
             WeiterCommand = new RelayCommand(_ => WeiterRequested?.Invoke());
+
             NavigateToFibuCommand = new RelayCommand(_ => NavigateToFibuRequested?.Invoke());
-            NavigateToJaCommand = new RelayCommand(_ => NavigateToJaRequested?.Invoke()); // NEU
+            NavigateToJaCommand = new RelayCommand(_ => NavigateToJaRequested?.Invoke());
+            NavigateToLohnCommand = new RelayCommand(_ => NavigateToLohnRequested?.Invoke()); // NEU
         }
 
         // Leistungen-Auswahl
@@ -51,8 +54,10 @@ namespace HonorarRechner.Wpf.ViewModels
 
         public ICommand ZurueckCommand { get; }
         public ICommand WeiterCommand { get; }
+
         public ICommand NavigateToFibuCommand { get; }
-        public ICommand NavigateToJaCommand { get; } // NEU
+        public ICommand NavigateToJaCommand { get; }
+        public ICommand NavigateToLohnCommand { get; } // NEU
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void Set<T>(ref T field, T value, [CallerMemberName] string? name = null)

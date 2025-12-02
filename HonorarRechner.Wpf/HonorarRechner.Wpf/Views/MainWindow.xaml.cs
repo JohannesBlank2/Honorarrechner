@@ -45,13 +45,16 @@ namespace HonorarRechner.Wpf
             var view = new LeistungenView();
             var vm = new LeistungenViewModel();
             vm.ZurueckRequested += ShowUnternehmensView;
+
             vm.NavigateToFibuRequested += ShowFibuView;
-            vm.NavigateToJaRequested += ShowJaAuswahlView; // NEU
+            vm.NavigateToJaRequested += ShowJaAuswahlView;
+            vm.NavigateToLohnRequested += ShowLohnView; // NEU
+
             view.DataContext = vm;
             MainContent.Content = view;
         }
 
-        // --- Detail: FiBu ---
+        // --- Details Views ---
         private void ShowFibuView()
         {
             var view = new FibuView();
@@ -61,21 +64,17 @@ namespace HonorarRechner.Wpf
             MainContent.Content = view;
         }
 
-        // --- Detail: JA Auswahl (NEU) ---
         private void ShowJaAuswahlView()
         {
             var view = new JaAuswahlView();
             var vm = new JaAuswahlViewModel();
-
             vm.ZurueckRequested += ShowLeistungenView;
             vm.OpenEuerRequested += ShowEuerView;
             vm.OpenBilanzRequested += ShowBilanzView;
-
             view.DataContext = vm;
             MainContent.Content = view;
         }
 
-        // --- Detail: EÜR (NEU) ---
         private void ShowEuerView()
         {
             var view = new EuerView();
@@ -85,12 +84,21 @@ namespace HonorarRechner.Wpf
             MainContent.Content = view;
         }
 
-        // --- Detail: Bilanz (NEU) ---
         private void ShowBilanzView()
         {
             var view = new BilanzView();
             var vm = new BilanzViewModel();
             vm.ZurueckRequested += ShowJaAuswahlView;
+            view.DataContext = vm;
+            MainContent.Content = view;
+        }
+
+        // NEU: Lohn View anzeigen
+        private void ShowLohnView()
+        {
+            var view = new LohnView();
+            var vm = new LohnViewModel();
+            vm.ZurueckRequested += ShowLeistungenView;
             view.DataContext = vm;
             MainContent.Content = view;
         }

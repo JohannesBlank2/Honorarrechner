@@ -145,6 +145,7 @@
                         <ToggleButton Style="{StaticResource OptionToggleButton}" Content="Lohn" IsChecked="{Binding Lohn}"/>
 
                         <Button Content="zum Lohn" 
+                                Command="{Binding NavigateToLohnCommand}"
                                 Visibility="{Binding Lohn, Converter={StaticResource BoolToVis}}"
                                 Style="{StaticResource LinkButtonStyle}"/>
                     </StackPanel>
