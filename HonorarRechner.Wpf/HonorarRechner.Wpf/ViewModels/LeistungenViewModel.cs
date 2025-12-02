@@ -9,11 +9,15 @@ namespace HonorarRechner.Wpf.ViewModels
     {
         public event Action? ZurueckRequested;
         public event Action? WeiterRequested;
+        public event Action? NavigateToFibuRequested;
+        public event Action? NavigateToJaRequested; // NEU
 
         public LeistungenViewModel()
         {
             ZurueckCommand = new RelayCommand(_ => ZurueckRequested?.Invoke());
             WeiterCommand = new RelayCommand(_ => WeiterRequested?.Invoke());
+            NavigateToFibuCommand = new RelayCommand(_ => NavigateToFibuRequested?.Invoke());
+            NavigateToJaCommand = new RelayCommand(_ => NavigateToJaRequested?.Invoke()); // NEU
         }
 
         // Leistungen-Auswahl
@@ -29,7 +33,7 @@ namespace HonorarRechner.Wpf.ViewModels
         public bool Selbstbucher { get => _selbstbucher; set => Set(ref _selbstbucher, value); }
         private bool _selbstbucher;
 
-        // Beispielpreise (später aus Excel)
+        // Beispielpreise
         public string FiBuMonatlichFormatted => "0,00 €";
         public string FiBuJaehrlichFormatted => "0,00 €";
 
@@ -42,12 +46,13 @@ namespace HonorarRechner.Wpf.ViewModels
         public string SelbstbucherMonatlichFormatted => "0,00 €";
         public string SelbstbucherJaehrlichFormatted => "0,00 €";
 
-        // Ausgabe
         public string JahresHonorarText => "Jahres Honorar: 0,00 €";
         public string MonatsHonorarText => "Monats Honorar: 0,00 €";
 
         public ICommand ZurueckCommand { get; }
         public ICommand WeiterCommand { get; }
+        public ICommand NavigateToFibuCommand { get; }
+        public ICommand NavigateToJaCommand { get; } // NEU
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void Set<T>(ref T field, T value, [CallerMemberName] string? name = null)

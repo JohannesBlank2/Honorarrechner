@@ -10,50 +10,25 @@
 
     <UserControl.Resources>
 
-        <!-- Apple-Style Shadow -->
-        <DropShadowEffect x:Key="CardShadow"
-                          BlurRadius="20"
-                          ShadowDepth="2"
-                          Opacity="0.25"
-                          Direction="270"/>
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="20" ShadowDepth="2" Opacity="0.25" Direction="270"/>
 
-        <!-- Converter FIXED -->
         <conv:BoolToOpacityConverter x:Key="BoolToOpacity" />
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
-        <!-- Apple-Style Toggle Button -->
         <Style x:Key="OptionToggleButton" TargetType="ToggleButton">
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
-
-                        <Border x:Name="root"
-                                Padding="12"
-                                CornerRadius="18"
-                                Background="#10FFFFFF"
-                                BorderBrush="#33FFFFFF"
-                                BorderThickness="2"
-                                Effect="{StaticResource CardShadow}">
-                            <StackPanel Orientation="Horizontal"
-                                        VerticalAlignment="Center">
-                                <Ellipse Width="16" Height="16"
-                                         Fill="White"
-                                         Opacity="{Binding IsChecked,
-                                                  RelativeSource={RelativeSource TemplatedParent},
-                                                  Converter={StaticResource BoolToOpacity}}"
-                                         Margin="0,0,10,0"/>
-
-                                <TextBlock Text="{TemplateBinding Content}"
-                                           FontSize="20"
-                                           Foreground="White"
-                                           VerticalAlignment="Center"/>
+                        <Border x:Name="root" Padding="12" CornerRadius="18" Background="#10FFFFFF" BorderBrush="#33FFFFFF" BorderThickness="2" Effect="{StaticResource CardShadow}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse Width="16" Height="16" Fill="White" Opacity="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToOpacity}}" Margin="0,0,10,0"/>
+                                <TextBlock Text="{TemplateBinding Content}" FontSize="20" Foreground="White" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
-
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="root" Property="Background" Value="#20FFFFFF"/>
                             </Trigger>
-
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="root" Property="Background" Value="#50FFFFFF"/>
                                 <Setter TargetName="root" Property="BorderBrush" Value="#AAFFFFFF"/>
@@ -64,39 +39,49 @@
             </Setter>
         </Style>
 
+        <Style x:Key="LinkButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#CCFFFFFF"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="15,0,0,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <TextBlock Text="{TemplateBinding Content}" TextDecorations="Underline" Foreground="{TemplateBinding Foreground}"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </UserControl.Resources>
 
-    <!-- FADE-IN -->
     <UserControl.Triggers>
         <EventTrigger RoutedEvent="Loaded">
             <BeginStoryboard>
                 <Storyboard>
-                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                                     From="0" To="1" Duration="0:0:0.3"/>
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.3"/>
                 </Storyboard>
             </BeginStoryboard>
         </EventTrigger>
     </UserControl.Triggers>
 
-
-    <!-- MAIN UI -->
     <Grid>
-        <Border Background="#0077BE"
-                CornerRadius="40"
-                Margin="30"
-                Padding="50"
-                Effect="{StaticResource CardShadow}">
-
+        <Border Background="#0077BE" CornerRadius="40" Margin="30" Padding="50" Effect="{StaticResource CardShadow}">
             <Grid>
-
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-
-                <!-- HEADER -->
                 <Grid Grid.Row="0" Margin="0,0,0,20">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -104,26 +89,13 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0"
-                            Width="130"
-                            Height="130"
-                            CornerRadius="20"
-                            Background="#F5F5F5">
+                    <Border Grid.Column="0" Width="130" Height="130" CornerRadius="20" Background="#F5F5F5">
                         <Image Source="/SFS Logo.png" Stretch="Uniform"/>
                     </Border>
 
-                    <TextBlock Grid.Column="1"
-                               Text="Leistungen"
-                               FontSize="32"
-                               FontWeight="Bold"
-                               Foreground="White"
-                               TextDecorations="Underline"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="Leistungen" FontSize="32" FontWeight="Bold" Foreground="White" TextDecorations="Underline" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Grid>
 
-
-                <!-- CONTENT -->
                 <Grid Grid.Row="1">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="200"/>
@@ -139,123 +111,70 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
+                    <TextBlock Text="Monatlich" Grid.Row="0" Grid.Column="0" Foreground="White" FontSize="18" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Jährlich" Grid.Row="0" Grid.Column="1" Foreground="White" FontSize="18" HorizontalAlignment="Center"/>
 
-                    <!-- Spaltenüberschrift -->
-                    <TextBlock Text="Monatlich" Grid.Row="0" Grid.Column="0"
-                               Foreground="White" FontSize="18"
-                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding FiBuMonatlichFormatted}" Grid.Row="1" Grid.Column="0" Foreground="White" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding FiBuJaehrlichFormatted}" Grid.Row="1" Grid.Column="1" Foreground="White" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-                    <TextBlock Text="Jährlich" Grid.Row="0" Grid.Column="1"
-                               Foreground="White" FontSize="18"
-                               HorizontalAlignment="Center"/>
+                    <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,15">
+                        <ToggleButton Style="{StaticResource OptionToggleButton}" Content="FiBu" IsChecked="{Binding FiBu}"/>
 
+                        <Button Content="zur FiBu" 
+                                Command="{Binding NavigateToFibuCommand}"
+                                Visibility="{Binding FiBu, Converter={StaticResource BoolToVis}}"
+                                Style="{StaticResource LinkButtonStyle}"/>
+                    </StackPanel>
 
-                    <!-- FiBu -->
-                    <TextBlock Text="{Binding FiBuMonatlichFormatted}"
-                               Grid.Row="1" Grid.Column="0"
-                               Foreground="White" FontSize="20"
-                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding JAMonatlichFormatted}" Grid.Row="2" Grid.Column="0" Foreground="White" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding JAJaehrlichFormatted}" Grid.Row="2" Grid.Column="1" Foreground="White" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-                    <TextBlock Text="{Binding FiBuJaehrlichFormatted}"
-                               Grid.Row="1" Grid.Column="1"
-                               Foreground="White" FontSize="20"
-                               HorizontalAlignment="Center"/>
+                    <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,15">
+                        <ToggleButton Style="{StaticResource OptionToggleButton}" Content="JA" IsChecked="{Binding JA}"/>
 
-                    <ToggleButton Grid.Row="1" Grid.Column="2"
-                                  Style="{StaticResource OptionToggleButton}"
-                                  Content="FiBu"
-                                  IsChecked="{Binding FiBu}"/>
+                        <Button Content="zum JA" 
+                                Command="{Binding NavigateToJaCommand}"
+                                Visibility="{Binding JA, Converter={StaticResource BoolToVis}}"
+                                Style="{StaticResource LinkButtonStyle}"/>
+                    </StackPanel>
 
+                    <TextBlock Text="{Binding LohnMonatlichFormatted}" Grid.Row="3" Grid.Column="0" Foreground="White" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding LohnJaehrlichFormatted}" Grid.Row="3" Grid.Column="1" Foreground="White" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-                    <!-- JA -->
-                    <TextBlock Text="{Binding JAMonatlichFormatted}"
-                               Grid.Row="2" Grid.Column="0"
-                               Foreground="White" FontSize="20"
-                               HorizontalAlignment="Center"/>
+                    <StackPanel Grid.Row="3" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,15">
+                        <ToggleButton Style="{StaticResource OptionToggleButton}" Content="Lohn" IsChecked="{Binding Lohn}"/>
 
-                    <TextBlock Text="{Binding JAJaehrlichFormatted}"
-                               Grid.Row="2" Grid.Column="1"
-                               Foreground="White" FontSize="20"
-                               HorizontalAlignment="Center"/>
+                        <Button Content="zum Lohn" 
+                                Visibility="{Binding Lohn, Converter={StaticResource BoolToVis}}"
+                                Style="{StaticResource LinkButtonStyle}"/>
+                    </StackPanel>
 
-                    <ToggleButton Grid.Row="2" Grid.Column="2"
-                                  Style="{StaticResource OptionToggleButton}"
-                                  Content="JA"
-                                  IsChecked="{Binding JA}"/>
+                    <TextBlock Text="{Binding SelbstbucherMonatlichFormatted}" Grid.Row="4" Grid.Column="0" Foreground="White" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding SelbstbucherJaehrlichFormatted}" Grid.Row="4" Grid.Column="1" Foreground="White" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-
-                    <!-- Lohn -->
-                    <TextBlock Text="{Binding LohnMonatlichFormatted}"
-                               Grid.Row="3" Grid.Column="0"
-                               Foreground="White" FontSize="20"
-                               HorizontalAlignment="Center"/>
-
-                    <TextBlock Text="{Binding LohnJaehrlichFormatted}"
-                               Grid.Row="3" Grid.Column="1"
-                               Foreground="White" FontSize="20"
-                               HorizontalAlignment="Center"/>
-
-                    <ToggleButton Grid.Row="3" Grid.Column="2"
-                                  Style="{StaticResource OptionToggleButton}"
-                                  Content="Lohn"
-                                  IsChecked="{Binding Lohn}"/>
-
-
-                    <!-- Selbstbucher -->
-                    <TextBlock Text="{Binding SelbstbucherMonatlichFormatted}"
-                               Grid.Row="4" Grid.Column="0"
-                               Foreground="White" FontSize="20"
-                               HorizontalAlignment="Center"/>
-
-                    <TextBlock Text="{Binding SelbstbucherJaehrlichFormatted}"
-                               Grid.Row="4" Grid.Column="1"
-                               Foreground="White" FontSize="20"
-                               HorizontalAlignment="Center"/>
-
-                    <ToggleButton Grid.Row="4" Grid.Column="2"
-                                  Style="{StaticResource OptionToggleButton}"
-                                  Content="Selbstbucher (+20%)"
-                                  IsChecked="{Binding Selbstbucher}"/>
-
+                    <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,15">
+                        <ToggleButton Style="{StaticResource OptionToggleButton}" Content="Selbstbucher (+20%)" IsChecked="{Binding Selbstbucher}"/>
+                    </StackPanel>
                 </Grid>
 
-
-                <!-- FOOTER -->
-                <Grid Grid.Row="2"
-                      Margin="0,40,0,0">
-
+                <Grid Grid.Row="2" Margin="0,40,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <Button Grid.Column="0"
-                            Content="Zurück"
-                            Command="{Binding ZurueckCommand}"
-                            Width="150"
-                            Height="45"/>
+                    <Button Grid.Column="0" Content="Zurück" Command="{Binding ZurueckCommand}" Width="150" Height="45"/>
 
-                    <StackPanel Grid.Column="1"
-                                HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding JahresHonorarText}"
-                                   Foreground="White"
-                                   FontSize="22"
-                                   FontWeight="Bold"/>
-                        <TextBlock Text="{Binding MonatsHonorarText}"
-                                   Foreground="White"
-                                   FontSize="14"/>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding JahresHonorarText}" Foreground="White" FontSize="22" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding MonatsHonorarText}" Foreground="White" FontSize="14"/>
                     </StackPanel>
 
-                    <Button Grid.Column="2"
-                            Content="Weiter"
-                            Command="{Binding WeiterCommand}"
-                            Width="150"
-                            Height="45"/>
+                    <Button Grid.Column="2" Content="Weiter" Command="{Binding WeiterCommand}" Width="150" Height="45"/>
                 </Grid>
 
             </Grid>
         </Border>
     </Grid>
-
 </UserControl>
