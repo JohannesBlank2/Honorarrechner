@@ -9,112 +9,153 @@ namespace HonorarRechner.Wpf.ViewModels
     public class EuerViewModel : INotifyPropertyChanged
     {
         public event Action? ZurueckRequested;
-
         private readonly CultureInfo _deCulture = CultureInfo.GetCultureInfo("de-DE");
 
         public EuerViewModel()
         {
             ZurueckCommand = new RelayCommand(_ => ZurueckRequested?.Invoke());
 
-            // Initialwerte setzen, damit "Zahlen in den Boxen" erscheinen
-            _gegenstandswert = 50000m;
-            _bescheidAnzahl = "1";
+            // Standardwerte
+            _beaInput = "50000";
+            _gewerbeInput = "50000";
+            _uedbInput = "50000";
+            _ustInput = "50000";
+            _pauschaleInput = "1";
+
             Recalculate();
         }
 
         private string ToEuro(decimal value) => value.ToString("C", _deCulture);
 
-        // --- Eingaben ---
-        private decimal _gegenstandswert;
-        public string GegenstandswertText
+        // --- 1. BEA (Betriebs Einnahmen-Ausgaben) ---
+        private string _beaInput;
+        public string BeaInput
         {
-            get => _gegenstandswert.ToString("N2", _deCulture);
-            set
-            {
-                if (decimal.TryParse(value, NumberStyles.Any, _deCulture, out decimal result))
-                {
-                    _gegenstandswert = result;
-                    Recalculate();
-                    OnPropertyChanged();
-                }
-            }
+            get => _beaInput;
+            set { if (Set(ref _beaInput, value)) Recalculate(); }
         }
 
-        private string _bescheidAnzahl;
-        public string BescheidAnzahl
+        // --- 2. Gewerbesteuer ---
+        private string _gewerbeInput;
+        public string GewerbeInput
         {
-            get => _bescheidAnzahl;
-            set { if (Set(ref _bescheidAnzahl, value)) Recalculate(); }
+            get => _gewerbeInput;
+            set { if (Set(ref _gewerbeInput, value)) Recalculate(); }
         }
 
+        // --- 3. Überschuss (Optional) ---
         private bool _isUeberschussSelected;
         public bool IsUeberschussSelected
         {
             get => _isUeberschussSelected;
             set { if (Set(ref _isUeberschussSelected, value)) Recalculate(); }
         }
-
-        private bool _isAveurSelected = true;
-        public bool IsAveurSelected
+        private string _uedbInput;
+        public string UedbInput
         {
-            get => _isAveurSelected;
-            set { if (Set(ref _isAveurSelected, value)) Recalculate(); }
+            get => _uedbInput;
+            set { if (Set(ref _uedbInput, value)) Recalculate(); }
         }
 
-        // --- Sätze (für die grauen Boxen) ---
+        // --- 4. Umsatzsteuer ---
+        private string _ustInput;
+        public string UstInput
+        {
+            get => _ustInput;
+            set { if (Set(ref _ustInput, value)) Recalculate(); }
+        }
+
+        // --- 5. Pauschale ---
+        private string _pauschaleInput; // Anzahl
+        public string PauschaleInput
+        {
+            get => _pauschaleInput;
+            set { if (Set(ref _pauschaleInput, value)) Recalculate(); }
+        }
+
+
+        // --- Sätze ---
         public string BeaSatz => "20/10";
-        public string AveurSatz => "10/10";
         public string GewerbeSatz => "5/10";
         public string UedbSatz => "10/10";
         public string UstSatz => "3/10";
 
-        // --- Werte ---
-        private decimal _beaValue;
-        public string BeaText => ToEuro(_beaValue);
+        // --- Ergebnisse ---
+        private decimal _beaResult;
+        public string BeaResultText => ToEuro(_beaResult);
 
-        private decimal _aveurValue;
-        public string AveurText => ToEuro(_aveurValue);
+        private decimal _gewerbeResult;
+        public string GewerbeResultText => ToEuro(_gewerbeResult);
 
-        private decimal _gewerbeValue;
-        public string GewerbeText => ToEuro(_gewerbeValue);
+        private decimal _uedbResult;
+        public string UedbResultText => ToEuro(_uedbResult);
 
-        private decimal _uedbValue;
-        public string UedbText => ToEuro(_uedbValue);
+        private decimal _ustResult;
+        public string UstResultText => ToEuro(_ustResult);
 
-        private decimal _ustValue;
-        public string UstText => ToEuro(_ustValue);
+        private decimal _pauschaleResult;
+        public string PauschaleResultText => ToEuro(_pauschaleResult);
 
-        private decimal _pauschaleValue;
-        public string PauschaleText => ToEuro(_pauschaleValue);
+        // Summen
+        private decimal _summeJahr;
+        public string JahresGesamtText => ToEuro(_summeJahr);
+        public string MonatsAnteilText => ToEuro(_summeJahr / 12);
 
-        // --- Summen ---
-        private decimal _zwischenSummeMonat;
-        public string MonatsAnteilText => ToEuro(_zwischenSummeMonat / 12);
-        public string JahresGesamtText => ToEuro(_zwischenSummeMonat);
+
+        // --- Logik ---
+        private decimal ParseInput(string input)
+        {
+            if (decimal.TryParse(input, NumberStyles.Any, _deCulture, out decimal result))
+                return result;
+            return 0;
+        }
 
         private void Recalculate()
         {
-            decimal grundgebuehr = _gegenstandswert * 0.01m;
-            if (grundgebuehr < 50) grundgebuehr = 50;
+            _summeJahr = 0;
 
-            _beaValue = grundgebuehr * 2.0m;
-            _aveurValue = IsAveurSelected ? grundgebuehr * 1.0m : 0;
-            _gewerbeValue = grundgebuehr * 0.5m;
-            _uedbValue = IsUeberschussSelected ? grundgebuehr * 1.0m : 0;
-            _ustValue = grundgebuehr * 0.3m;
+            // 1. BEA (Beispiel: 1% vom Wert * 2.0)
+            decimal valBea = ParseInput(_beaInput);
+            _beaResult = (valBea * 0.01m) * 2.0m;
+            if (_beaResult < 25) _beaResult = 25;
+            _summeJahr += _beaResult;
 
-            if (int.TryParse(_bescheidAnzahl, out int anzahl))
-                _pauschaleValue = anzahl * 25m;
-            else _pauschaleValue = 0;
+            // 2. Gewerbe
+            decimal valGew = ParseInput(_gewerbeInput);
+            _gewerbeResult = (valGew * 0.01m) * 0.5m;
+            _summeJahr += _gewerbeResult;
 
-            _zwischenSummeMonat = _beaValue + _aveurValue + _gewerbeValue + _uedbValue + _ustValue + _pauschaleValue;
+            // 3. Überschuss
+            if (IsUeberschussSelected)
+            {
+                decimal valUedb = ParseInput(_uedbInput);
+                _uedbResult = (valUedb * 0.01m) * 1.0m;
+                _summeJahr += _uedbResult;
+            }
+            else
+            {
+                _uedbResult = 0;
+            }
 
-            OnPropertyChanged(nameof(BeaText));
-            OnPropertyChanged(nameof(AveurText));
-            OnPropertyChanged(nameof(GewerbeText));
-            OnPropertyChanged(nameof(UedbText));
-            OnPropertyChanged(nameof(UstText));
-            OnPropertyChanged(nameof(PauschaleText));
+            // 4. USt
+            decimal valUst = ParseInput(_ustInput);
+            _ustResult = (valUst * 0.01m) * 0.3m;
+            _summeJahr += _ustResult;
+
+            // 5. Pauschale
+            if (int.TryParse(_pauschaleInput, out int count))
+            {
+                _pauschaleResult = count * 25m;
+            }
+            else _pauschaleResult = 0;
+            _summeJahr += _pauschaleResult;
+
+            // UI
+            OnPropertyChanged(nameof(BeaResultText));
+            OnPropertyChanged(nameof(GewerbeResultText));
+            OnPropertyChanged(nameof(UedbResultText));
+            OnPropertyChanged(nameof(UstResultText));
+            OnPropertyChanged(nameof(PauschaleResultText));
             OnPropertyChanged(nameof(JahresGesamtText));
             OnPropertyChanged(nameof(MonatsAnteilText));
         }
