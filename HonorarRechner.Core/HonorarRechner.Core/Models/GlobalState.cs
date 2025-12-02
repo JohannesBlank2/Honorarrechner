@@ -9,6 +9,8 @@
         public static GlobalState Instance => _instance ??= new GlobalState();
 
         public UnternehmensDaten Daten { get; set; } = new UnternehmensDaten();
+
+        // Dank dem neuen Konstruktor in TabellenWerte sind hier jetzt sofort Zahlen drin!
         public TabellenWerte Werte { get; set; } = new TabellenWerte();
 
         // Standardwerte initialisieren, damit nicht alles 0 ist, falls Excel noch nicht geladen wurde
