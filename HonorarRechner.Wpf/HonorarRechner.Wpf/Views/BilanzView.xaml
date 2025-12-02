@@ -39,6 +39,17 @@
         </Style>
     </UserControl.Resources>
 
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.4"/>
+                    <ThicknessAnimation Storyboard.TargetProperty="Margin" From="30,50,30,30" To="30,30,30,30" Duration="0:0:0.4" DecelerationRatio="0.9"/>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </UserControl.Triggers>
+
     <Grid>
         <Border Background="#0077BE" CornerRadius="40" Margin="30" Padding="40" Effect="{StaticResource CardShadow}">
             <Grid>
@@ -56,8 +67,7 @@
                     <Border Grid.Column="0" Width="100" Height="100" CornerRadius="20" Background="White" Margin="0,0,20,0">
                         <Image Source="/SFS Logo.png" Stretch="Uniform"/>
                     </Border>
-                    <TextBlock Grid.Column="1" Text="Bilanz" FontSize="36" FontWeight="Bold" Foreground="White" 
-                               TextDecorations="Underline" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="Bilanz" FontSize="36" FontWeight="Bold" Foreground="White" TextDecorations="Underline" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                 </Grid>
 
                 <Grid Grid.Row="1">
@@ -81,7 +91,6 @@
                             <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
                             <TextBlock Grid.Column="2" Text="{Binding AufstellungText}" Style="{StaticResource RowValue}"/>
                         </Grid>
-
                         <Grid Margin="0,5">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -95,7 +104,6 @@
                             <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
                             <TextBlock Grid.Column="2" Text="{Binding AntragText}" Style="{StaticResource RowValue}"/>
                         </Grid>
-
                         <Grid Margin="0,5">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -109,7 +117,6 @@
                             <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
                             <TextBlock Grid.Column="2" Text="{Binding SteuerbilanzText}" Style="{StaticResource RowValue}"/>
                         </Grid>
-
                         <Grid Margin="0,5">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -139,7 +146,6 @@
                             <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
                             <TextBlock Grid.Column="2" Text="{Binding UstText}" Style="{StaticResource RowValue}"/>
                         </Grid>
-
                         <Grid Margin="0,5">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -153,7 +159,6 @@
                             <TextBox Grid.Column="1" Style="{StaticResource InputBox}" IsReadOnly="True" Background="#E0E0E0" Text="0,00 €"/>
                             <TextBlock Grid.Column="2" Text="{Binding GewerbeText}" Style="{StaticResource RowValue}"/>
                         </Grid>
-
                         <Grid Margin="0,5">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -167,7 +172,6 @@
                             <TextBox Grid.Column="1" Style="{StaticResource InputBox}" Text="{Binding BescheidAnzahl}" TextAlignment="Center"/>
                             <TextBlock Grid.Column="2" Text="{Binding BescheidText}" Style="{StaticResource RowValue}"/>
                         </Grid>
-
                         <Grid Margin="0,20,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -186,13 +190,7 @@
                 </Grid>
 
                 <Grid Grid.Row="2" Margin="0,20,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Button Grid.Column="0" Content="Zurück" Command="{Binding ZurueckCommand}" 
-                            Width="150" Height="45" FontSize="16" Background="#20FFFFFF" Foreground="White">
+                    <Button Content="Zurück" Command="{Binding ZurueckCommand}" Width="150" Height="45" FontSize="16" Background="#20FFFFFF" Foreground="White">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border Background="{TemplateBinding Background}" CornerRadius="22" BorderBrush="White" BorderThickness="1">

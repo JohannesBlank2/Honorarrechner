@@ -8,12 +8,7 @@
              d:DesignWidth="1300">
 
     <UserControl.Resources>
-
-        <DropShadowEffect x:Key="CardShadow"
-                          BlurRadius="25"
-                          ShadowDepth="4"
-                          Opacity="0.35"
-                          Direction="270" />
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="25" ShadowDepth="4" Opacity="0.35" Direction="270" />
 
         <Style x:Key="MandatTypeButtonStyle" TargetType="Button">
             <Setter Property="Width" Value="260"/>
@@ -29,22 +24,10 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="root"
-                                CornerRadius="30"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}">
+                        <Border x:Name="root" CornerRadius="30" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="{TemplateBinding Content}"
-                                           HorizontalAlignment="Center"
-                                           FontSize="{TemplateBinding FontSize}"
-                                           FontWeight="{TemplateBinding FontWeight}"
-                                           Foreground="{TemplateBinding Foreground}"/>
-                                <TextBlock Text="{TemplateBinding Tag}"
-                                           HorizontalAlignment="Center"
-                                           Margin="0,6,0,0"
-                                           FontSize="13"
-                                           Foreground="#CCFFFFFF"/>
+                                <TextBlock Text="{TemplateBinding Content}" HorizontalAlignment="Center" FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}" Foreground="{TemplateBinding Foreground}"/>
+                                <TextBlock Text="{TemplateBinding Tag}" HorizontalAlignment="Center" Margin="0,6,0,0" FontSize="13" Foreground="#CCFFFFFF"/>
                             </StackPanel>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -74,18 +57,11 @@
             <Setter Property="BorderBrush" Value="#E0E0E0"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="root"
-                                CornerRadius="20"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
+                        <Border x:Name="root" CornerRadius="20" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -100,16 +76,21 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
     </UserControl.Resources>
 
-    <Grid>
-        <Border Background="#0077BE"
-                CornerRadius="40"
-                Margin="30"
-                Padding="50"
-                Effect="{StaticResource CardShadow}">
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.4"/>
+                    <ThicknessAnimation Storyboard.TargetProperty="Margin" From="30,50,30,30" To="30,30,30,30" Duration="0:0:0.4" DecelerationRatio="0.9"/>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </UserControl.Triggers>
 
+    <Grid>
+        <Border Background="#0077BE" CornerRadius="40" Margin="20" Padding="30" Effect="{StaticResource CardShadow}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -117,7 +98,6 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Kopf -->
                 <Grid Grid.Row="0" Margin="0,0,0,20">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -125,83 +105,39 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0"
-                            Width="130"
-                            Height="130"
-                            CornerRadius="20"
-                            Background="#F5F5F5"
-                            HorizontalAlignment="Left"
-                            Margin="0,0,30,0">
+                    <Border Grid.Column="0" Width="130" Height="130" CornerRadius="20" Background="#F5F5F5" HorizontalAlignment="Left">
                         <Image Source="/SFS Logo.png" Stretch="Uniform"/>
                     </Border>
 
-                    <TextBlock Grid.Column="1"
-                               Text="Mandatstyp"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               FontSize="32"
-                               FontWeight="Bold"
-                               Foreground="White"
-                               TextDecorations="Underline"/>
+                    <TextBlock Grid.Column="1" Text="Mandatstyp" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="32" FontWeight="Bold" Foreground="White" TextDecorations="Underline"/>
                 </Grid>
 
-                <!-- Auswahl -->
                 <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Center"
-                                Margin="0,40,0,20">
-                        <Button Style="{StaticResource MandatTypeButtonStyle}"
-                                Content="Privat"
-                                Tag="Privatmandat"
-                                Command="{Binding SelectMandatCommand}"
-                                CommandParameter="Privat"/>
-
-                        <Button Style="{StaticResource MandatTypeButtonStyle}"
-                                Content="Unternehmen"
-                                Tag="Unternehmensmandat"
-                                Command="{Binding SelectMandatCommand}"
-                                CommandParameter="Unternehmen"/>
-
-                        <Button Style="{StaticResource MandatTypeButtonStyle}"
-                                Content="StartUp"
-                                Tag="coming soon..."
-                                IsEnabled="False"
-                                CommandParameter="StartUp"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,20">
+                        <Button Style="{StaticResource MandatTypeButtonStyle}" Content="Privat" Tag="Privatmandat" Command="{Binding SelectMandatCommand}" CommandParameter="Privat"/>
+                        <Button Style="{StaticResource MandatTypeButtonStyle}" Content="Unternehmen" Tag="Unternehmensmandat" Command="{Binding SelectMandatCommand}" CommandParameter="Unternehmen"/>
+                        <Button Style="{StaticResource MandatTypeButtonStyle}" Content="StartUp" Tag="coming soon..." IsEnabled="False" CommandParameter="StartUp"/>
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Footer -->
                 <Grid Grid.Row="2" Margin="0,40,0,0">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Orientation="Vertical"
-                                Grid.Column="0"
-                                Margin="5,0,0,0">
-                        <Button Style="{StaticResource SmallAccentButtonStyle}"
-                                Content="Open Excel"
-                                Command="{Binding OpenExcelCommand}"/>
-                        <Button Style="{StaticResource SmallAccentButtonStyle}"
-                                Content="Update Excel"
-                                Command="{Binding UpdateExcelCommand}"/>
+                    <StackPanel Grid.Column="0" Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                        <Button Style="{StaticResource SmallAccentButtonStyle}" Content="Open Excel" Command="{Binding OpenExcelCommand}"/>
+                        <Button Style="{StaticResource SmallAccentButtonStyle}" Content="Update Excel" Command="{Binding UpdateExcelCommand}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="1"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
-                        <TextBlock Text="{Binding JahresHonorarText}"
-                                   FontSize="22"
-                                   FontWeight="Bold"
-                                   Foreground="White"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,0,0,4"/>
-                        <TextBlock Text="{Binding MonatsHonorarText}"
-                                   FontSize="14"
-                                   Foreground="White"
-                                   HorizontalAlignment="Center"/>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                        <TextBlock Text="{Binding JahresHonorarText}" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding MonatsHonorarText}" FontSize="14" Foreground="White" HorizontalAlignment="Center"/>
                     </StackPanel>
+
+                    <Border Grid.Column="2"/>
                 </Grid>
             </Grid>
         </Border>

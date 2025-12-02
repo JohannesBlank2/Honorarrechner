@@ -8,40 +8,94 @@
              d:DesignWidth="1300">
 
     <UserControl.Resources>
-        <DropShadowEffect x:Key="CardShadow"
-                          BlurRadius="25"
-                          ShadowDepth="4"
-                          Opacity="0.35"
-                          Direction="270" />
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="25" ShadowDepth="4" Opacity="0.35" Direction="270" />
 
-        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Width" Value="120"/>
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="Margin" Value="10,0,0,0"/>
-            <Setter Property="Padding" Value="16,6"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#198fd5"/>
-            <Setter Property="BorderBrush" Value="#FFFFFF"/>
-            <Setter Property="BorderThickness" Value="1.2"/>
-            <Setter Property="Cursor" Value="Hand"/>
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Width" Value="280"/>
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="#F9F9F9"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="CaretBrush" Value="#0077BE"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="root"
-                                CornerRadius="20"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" CornerRadius="15" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <Grid>
+                                <ScrollViewer x:Name="PART_ContentHost" Margin="5,0"/>
+                            </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="root" Property="Background" Value="#33FFFFFF"/>
+                                <Setter Property="Background" Value="#FFFFFF"/>
                             </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="root" Property="Background" Value="#11689a"/>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter Property="Background" Value="#FFFFFF"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#80FFFFFF"/>
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="1.02" ScaleY="1.02"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        </Style>
+
+        <Style x:Key="InputLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style x:Key="BouncyCheckBox" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="20,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal" Background="Transparent">
+                            <Grid Width="30" Height="30" Margin="0,0,10,0">
+                                <Border x:Name="box" CornerRadius="10" Background="#20FFFFFF" BorderBrush="#80FFFFFF" BorderThickness="2">
+                                    <Border.RenderTransform>
+                                        <ScaleTransform x:Name="boxScale" ScaleX="1" ScaleY="1" CenterX="15" CenterY="15"/>
+                                    </Border.RenderTransform>
+                                </Border>
+                                <Viewbox Margin="6">
+                                    <Path x:Name="tick" Data="M 0,5 L 4,9 L 10,0" Stroke="White" StrokeThickness="2" 
+                                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" Opacity="0"/>
+                                </Viewbox>
+                            </Grid>
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="box" Property="Background" Value="#26D1DE"/>
+                                <Setter TargetName="box" Property="BorderBrush" Value="Transparent"/>
+                                <Setter TargetName="tick" Property="Opacity" Value="1"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="boxScale" Storyboard.TargetProperty="ScaleX" To="1.2" Duration="0:0:0.1" AutoReverse="True"/>
+                                            <DoubleAnimation Storyboard.TargetName="boxScale" Storyboard.TargetProperty="ScaleY" To="1.2" Duration="0:0:0.1" AutoReverse="True"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="box" Property="BorderBrush" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -53,28 +107,18 @@
             <Setter Property="Width" Value="180"/>
             <Setter Property="Height" Value="40"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
-            <Setter Property="Padding" Value="12,6"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="#004B7F"/>
             <Setter Property="Background" Value="#F5F5F5"/>
-            <Setter Property="BorderBrush" Value="#E0E0E0"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="root"
-                                CornerRadius="20"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
+                        <Border x:Name="root" CornerRadius="20" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="root" Property="Background" Value="#FFFFFF"/>
-                                <Setter TargetName="root" Property="BorderBrush" Value="#C5E4F5"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="root" Property="Background" Value="#E0F0FA"/>
@@ -85,25 +129,43 @@
             </Setter>
         </Style>
 
-        <Style x:Key="InputTextBoxStyle" TargetType="TextBox">
-            <Setter Property="Width" Value="260"/>
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="Margin" Value="0,6,0,20"/>
-            <Setter Property="Padding" Value="8,4"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Background" Value="#F5F5F5"/>
-            <Setter Property="BorderBrush" Value="#E0E0E0"/>
-            <Setter Property="BorderThickness" Value="1"/>
+        <Style x:Key="NavButton" TargetType="Button">
+            <Setter Property="Width" Value="150"/>
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Background" Value="#20FFFFFF"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="22" BorderBrush="White" BorderThickness="1">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#40FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
+
     </UserControl.Resources>
 
-    <Grid>
-        <Border Background="#0077BE"
-                CornerRadius="40"
-                Margin="30"
-                Padding="50"
-                Effect="{StaticResource CardShadow}">
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.4"/>
+                    <ThicknessAnimation Storyboard.TargetProperty="Margin" From="30,50,30,30" To="30,30,30,30" Duration="0:0:0.4" DecelerationRatio="0.9"/>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </UserControl.Triggers>
 
+    <Grid>
+        <Border Background="#0077BE" CornerRadius="40" Margin="20" Padding="30" Effect="{StaticResource CardShadow}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -111,7 +173,6 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Kopf -->
                 <Grid Grid.Row="0" Margin="0,0,0,20">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -119,146 +180,74 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0"
-                            Width="130"
-                            Height="130"
-                            CornerRadius="20"
-                            Background="#F5F5F5"
-                            HorizontalAlignment="Left"
-                            Margin="0,0,30,0">
+                    <Border Grid.Column="0" Width="100" Height="100" CornerRadius="20" Background="White" HorizontalAlignment="Left">
                         <Image Source="/SFS Logo.png" Stretch="Uniform"/>
                     </Border>
 
-                    <TextBlock Grid.Column="1"
-                               Text="Unternehmensdaten"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               FontSize="30"
-                               FontWeight="Bold"
-                               Foreground="White"
-                               TextDecorations="Underline"/>
+                    <TextBlock Grid.Column="1" Text="Unternehmensdaten" FontSize="36" FontWeight="Bold" Foreground="White" 
+                               TextDecorations="Underline" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                 </Grid>
 
-                <!-- Inhalt -->
-                <Grid Grid.Row="1" Margin="40,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
+                    <Grid VerticalAlignment="Center" MaxWidth="1000">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="20,10">
+                            <TextBlock Text="Umsatz im Jahr" Style="{StaticResource InputLabel}"/>
+                            <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding UmsatzImJahr, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="20,10">
+                            <TextBlock Text="Bilanzsumme" Style="{StaticResource InputLabel}"/>
+                            <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding Bilanzsumme, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="20,10">
+                            <TextBlock Text="Jahresüberschuss" Style="{StaticResource InputLabel}"/>
+                            <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding Jahresueberschuss, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="1" Grid.Column="1" Margin="20,10">
+                            <TextBlock Text="Anzahl Mitarbeiter" Style="{StaticResource InputLabel}"/>
+                            <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding AnzahlMitarbeiter, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                            <CheckBox Content="Bargeldgewerbe" Style="{StaticResource BouncyCheckBox}" IsChecked="{Binding IstBargeldGewerbe}"/>
+                            <CheckBox Content="Onlinehändler" Style="{StaticResource BouncyCheckBox}" IsChecked="{Binding IstOnlineHaendler}"/>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+
+                <Grid Grid.Row="2" Margin="0,20,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Umsatz -->
-                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="40,0,40,20">
-                        <TextBlock Text="Umsatz im Jahr"
-                   Foreground="White"
-                   FontSize="20" TextAlignment="Center"/>
-                        <TextBox Style="{StaticResource InputTextBoxStyle}"
-                 Text="{Binding UmsatzImJahr, UpdateSourceTrigger=PropertyChanged}"/>
+                    <StackPanel Grid.Column="0" Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                        <Button Style="{StaticResource SmallAccentButtonStyle}" Content="Open Excel" Command="{Binding OpenExcelCommand}"/>
+                        <Button Style="{StaticResource SmallAccentButtonStyle}" Content="Update Excel" Command="{Binding UpdateExcelCommand}"/>
                     </StackPanel>
 
-                    <!-- Bilanzsumme -->
-                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="40,0,40,20">
-                        <TextBlock Text="Bilanzsumme"
-                   Foreground="White"
-                   FontSize="20" TextAlignment="Center"/>
-                        <TextBox Style="{StaticResource InputTextBoxStyle}"
-                 Text="{Binding Bilanzsumme, UpdateSourceTrigger=PropertyChanged}"/>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                        <TextBlock Text="{Binding JahresHonorarText}" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding MonatsHonorarText}" FontSize="14" Foreground="White" HorizontalAlignment="Center"/>
                     </StackPanel>
 
-                    <!-- Jahresüberschuss -->
-                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="40,0,40,20">
-                        <TextBlock Text="Jahresüberschuss"
-                   Foreground="White"
-                   FontSize="20" TextAlignment="Center"/>
-                        <TextBox Style="{StaticResource InputTextBoxStyle}"
-                 Text="{Binding Jahresueberschuss, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-
-                    <!-- Anzahl Mitarbeiter -->
-                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="40,0,40,20">
-                        <TextBlock Text="Anzahl Mitarbeiter"
-                   Foreground="White"
-                   FontSize="20" TextAlignment="Center"/>
-                        <TextBox Style="{StaticResource InputTextBoxStyle}"
-                 Text="{Binding AnzahlMitarbeiter, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-
-                    <!-- Checkbox-Bereich -->
-                    <StackPanel Grid.Row="2"
-            Grid.ColumnSpan="2"
-            Orientation="Horizontal"
-            HorizontalAlignment="Center"
-            Margin="0,30,0,0">
-
-                        <StackPanel HorizontalAlignment="Center" Margin="0,0,80,0">
-                            <CheckBox Content="Bargeldgewerbe"
-                  Foreground="White"
-                  FontSize="18"
-                  IsChecked="{Binding IstBargeldGewerbe}"
-                  HorizontalAlignment="Center"/>
-                        </StackPanel>
-
-                        <StackPanel HorizontalAlignment="Center" Margin="80,0,0,0">
-                            <CheckBox Content="Onlinehändler"
-                  Foreground="White"
-                  FontSize="18"
-                  IsChecked="{Binding IstOnlineHaendler}"
-                  HorizontalAlignment="Center"/>
-                        </StackPanel>
-
-                    </StackPanel>
-
-                </Grid>
-
-
-                <!-- Footer -->
-                <Grid Grid.Row="2" Margin="0,40,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0"
-                                Orientation="Vertical"
-                                Margin="5,0,0,0">
-                        <Button Style="{StaticResource SmallAccentButtonStyle}"
-                                Content="Open Excel"
-                                Command="{Binding OpenExcelCommand}"/>
-                        <Button Style="{StaticResource SmallAccentButtonStyle}"
-                                Content="Update Excel"
-                                Command="{Binding UpdateExcelCommand}"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="1"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
-                        <TextBlock Text="{Binding JahresHonorarText}"
-                                   FontSize="22"
-                                   FontWeight="Bold"
-                                   Foreground="White"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,0,0,4"/>
-                        <TextBlock Text="{Binding MonatsHonorarText}"
-                                   FontSize="14"
-                                   Foreground="White"
-                                   HorizontalAlignment="Center"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="2"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Right">
-                        <Button Style="{StaticResource PrimaryButtonStyle}"
-                                Content="Zurück"
-                                Command="{Binding ZurueckCommand}"/>
-                        <Button Style="{StaticResource PrimaryButtonStyle}"
-                                Content="Weiter"
-                                Command="{Binding WeiterCommand}"/>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                        <Button Content="Zurück" Command="{Binding ZurueckCommand}" Style="{StaticResource NavButton}" Margin="0,0,15,0"/>
+                        <Button Content="Weiter" Command="{Binding WeiterCommand}" Style="{StaticResource NavButton}"/>
                     </StackPanel>
                 </Grid>
             </Grid>

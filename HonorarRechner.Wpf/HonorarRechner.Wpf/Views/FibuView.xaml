@@ -3,33 +3,32 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d"
-             d:DesignHeight="750" d:DesignWidth="1300">
+             mc:Ignorable="d" d:DesignHeight="750" d:DesignWidth="1300">
 
     <UserControl.Resources>
         <DropShadowEffect x:Key="CardShadow" BlurRadius="20" ShadowDepth="2" Opacity="0.25" Direction="270"/>
 
         <Style x:Key="RowLabel" TargetType="TextBlock">
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,15"/>
+            <Setter Property="Margin" Value="0,10"/>
         </Style>
 
         <Style x:Key="RowValue" TargetType="TextBlock">
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
-            <Setter Property="Margin" Value="0,15"/>
+            <Setter Property="Margin" Value="0,10"/>
         </Style>
 
         <Style x:Key="InputBox" TargetType="TextBox">
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="Padding" Value="5"/>
-            <Setter Property="Height" Value="35"/>
-            <Setter Property="Width" Value="150"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Width" Value="140"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Template">
@@ -48,7 +47,8 @@
         <EventTrigger RoutedEvent="Loaded">
             <BeginStoryboard>
                 <Storyboard>
-                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.3"/>
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.4"/>
+                    <ThicknessAnimation Storyboard.TargetProperty="Margin" From="30,50,30,30" To="30,30,30,30" Duration="0:0:0.4" DecelerationRatio="0.9"/>
                 </Storyboard>
             </BeginStoryboard>
         </EventTrigger>
@@ -63,19 +63,15 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0" Margin="0,0,0,30">
+                <Grid Grid.Row="0" Margin="0,0,0,20">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-
-                    <Border Grid.Column="0" Width="100" Height="100" CornerRadius="20" Background="White" Margin="0,0,30,0">
+                    <Border Grid.Column="0" Width="100" Height="100" CornerRadius="20" Background="White" Margin="0,0,20,0">
                         <Image Source="/SFS Logo.png" Stretch="Uniform"/>
                     </Border>
-
-                    <TextBlock Grid.Column="1" Text="FiBu - Finanzbuchhaltung" 
-                               FontSize="36" FontWeight="Bold" Foreground="White" 
-                               TextDecorations="Underline" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="FiBu - Finanzbuchhaltung" FontSize="36" FontWeight="Bold" Foreground="White" TextDecorations="Underline" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                 </Grid>
 
                 <Grid Grid.Row="1" VerticalAlignment="Center" MaxWidth="1000" HorizontalAlignment="Center">
@@ -91,33 +87,31 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="30"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0" Grid.Column="1" Text="Satz / Umsatz" Foreground="#DDFFFFFF" FontSize="16" HorizontalAlignment="Center" Margin="0,0,0,10"/>
                     <TextBlock Grid.Row="0" Grid.Column="2" Text="Monatlich" Foreground="#DDFFFFFF" FontSize="16" HorizontalAlignment="Right" Margin="0,0,0,10"/>
 
-                    <StackPanel Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">
-                        <TextBlock Text="Laufende Buchführung" Style="{StaticResource RowLabel}" FontWeight="Bold"/>
-                        <TextBlock Text="nach Gegenstandswerttabelle" Foreground="#CCFFFFFF" FontSize="14" Margin="0,-10,0,0"/>
+                    <StackPanel Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="0,20">
+                        <TextBlock Text="Laufende Buchführung" Style="{StaticResource RowLabel}" FontWeight="Bold" Margin="0"/>
+                        <TextBlock Text="nach Gegenstandswerttabelle" Foreground="#CCFFFFFF" FontSize="14" Margin="0,5,0,0"/>
                     </StackPanel>
-
-                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,20">
                         <TextBlock Text="Umsatz:" Foreground="White" FontSize="14" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding UmsatzText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputBox}" TextAlignment="Right"/>
+                        <TextBox Text="{Binding UmsatzText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputBox}" TextAlignment="Right" Margin="10,0,0,0"/>
                         <TextBlock Text="{Binding SatzText, StringFormat='Satz: {0}'}" Foreground="#CCFFFFFF" FontSize="14" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                     </StackPanel>
+                    <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding LaufendeFibuMonatlich}" Style="{StaticResource RowValue}" Margin="0,20"/>
 
-                    <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding LaufendeFibuMonatlich}" Style="{StaticResource RowValue}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="IT Pauschale" Style="{StaticResource RowLabel}" Margin="0,10"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="Pauschale" Foreground="White" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10"/>
+                    <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding ItPauschaleText}" Style="{StaticResource RowValue}" Margin="0,10"/>
 
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="IT Pauschale" Style="{StaticResource RowLabel}"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" Text="Pauschale" Foreground="White" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding ItPauschaleText}" Style="{StaticResource RowValue}"/>
-
-                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Auslagenpauschale" Style="{StaticResource RowLabel}"/>
-                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding AuslagenPauschaleProzentText}" Foreground="White" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    <TextBlock Grid.Row="5" Grid.Column="2" Text="{Binding AuslagenPauschaleWert}" Style="{StaticResource RowValue}"/>
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Auslagenpauschale" Style="{StaticResource RowLabel}" Margin="0,10"/>
+                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding AuslagenPauschaleProzentText}" Foreground="White" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10"/>
+                    <TextBlock Grid.Row="5" Grid.Column="2" Text="{Binding AuslagenPauschaleWert}" Style="{StaticResource RowValue}" Margin="0,10"/>
 
                     <Border Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="3" BorderBrush="#80FFFFFF" BorderThickness="0,1,0,0" Padding="0,20,0,0">
                         <Grid>
@@ -125,7 +119,6 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-
                             <StackPanel Grid.Column="1" HorizontalAlignment="Right">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,5">
                                     <TextBlock Text="monatlich: " Foreground="#DDFFFFFF" FontSize="18" VerticalAlignment="Bottom" Margin="0,0,10,2"/>
@@ -160,7 +153,6 @@
                         </Button.Template>
                     </Button>
                 </Grid>
-
             </Grid>
         </Border>
     </Grid>

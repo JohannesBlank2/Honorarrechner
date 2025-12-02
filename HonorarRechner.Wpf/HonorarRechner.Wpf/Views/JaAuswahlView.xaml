@@ -16,17 +16,17 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="root" Width="300" Height="200" CornerRadius="30" 
+                        <Border x:Name="root" Width="260" Height="160" CornerRadius="25" 
                                 Background="#10FFFFFF" BorderBrush="#33FFFFFF" BorderThickness="2" 
-                                Effect="{StaticResource CardShadow}" Margin="20">
+                                Effect="{StaticResource CardShadow}" Margin="15">
                             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock Text="{TemplateBinding Content}" FontSize="32" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                                <TextBlock Text="{TemplateBinding Tag}" FontSize="16" Foreground="#CCFFFFFF" HorizontalAlignment="Center" Margin="0,5,0,0"/>
-                                <Ellipse Width="24" Height="24" Margin="0,20,0,0" Stroke="White" StrokeThickness="2">
-                                    <Ellipse.Fill>
-                                        <SolidColorBrush Color="#26D1DE" Opacity="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToOpacity}}"/>
-                                    </Ellipse.Fill>
-                                </Ellipse>
+                                <TextBlock Text="{TemplateBinding Content}" FontSize="28" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{TemplateBinding Tag}" FontSize="14" Foreground="#CCFFFFFF" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                <Grid Width="24" Height="24" Margin="0,15,0,0">
+                                    <Ellipse Stroke="White" StrokeThickness="2"/>
+                                    <Ellipse Width="12" Height="12" Fill="#26D1DE" 
+                                             Opacity="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToOpacity}}"/>
+                                </Grid>
                             </StackPanel>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -43,17 +43,44 @@
             </Setter>
         </Style>
 
+        <Style x:Key="ModernRadioButton" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <StackPanel Orientation="Horizontal" Background="Transparent">
+                            <Grid Width="22" Height="22" Margin="0,0,8,0">
+                                <Ellipse Stroke="White" StrokeThickness="2"/>
+                                <Ellipse x:Name="dot" Width="10" Height="10" Fill="#26D1DE" Opacity="0"/>
+                            </Grid>
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="dot" Property="Opacity" Value="1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="LinkButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Foreground" Value="#CCFFFFFF"/>
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontSize" Value="15"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Margin" Value="0,10,0,0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <TextBlock Text="{TemplateBinding Content}" TextDecorations="Underline" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="{TemplateBinding Content}" TextDecorations="Underline" Foreground="{TemplateBinding Foreground}"/>
+                            <Path Data="M 0,0 L 4,4 L 0,8" Stroke="{TemplateBinding Foreground}" StrokeThickness="2" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter Property="Foreground" Value="#26D1DE"/>
@@ -65,8 +92,19 @@
         </Style>
     </UserControl.Resources>
 
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.4"/>
+                    <ThicknessAnimation Storyboard.TargetProperty="Margin" From="30,50,30,30" To="30,30,30,30" Duration="0:0:0.4" DecelerationRatio="0.9"/>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </UserControl.Triggers>
+
     <Grid>
-        <Border Background="#0077BE" CornerRadius="40" Margin="30" Padding="50" Effect="{StaticResource CardShadow}">
+        <Border Background="#0077BE" CornerRadius="40" Margin="30" Padding="40" Effect="{StaticResource CardShadow}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -74,15 +112,15 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0" Margin="0,0,0,30">
-                    <TextBlock Text="Jahresabschluss (JA)" FontSize="36" FontWeight="Bold" Foreground="White" 
+                <Grid Grid.Row="0" Margin="0,0,0,20">
+                    <TextBlock Text="Jahresabschluss (JA)" FontSize="32" FontWeight="Bold" Foreground="White" 
                                TextDecorations="Underline" HorizontalAlignment="Center"/>
                 </Grid>
 
-                <Grid Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Grid Grid.Row="1" VerticalAlignment="Top" Margin="0,50,0,0" HorizontalAlignment="Center">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="50"/>
+                        <ColumnDefinition Width="40"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
@@ -105,21 +143,21 @@
                                 Visibility="{Binding IsBilanzSelected, Converter={StaticResource BoolToVis}}"
                                 Style="{StaticResource LinkButton}"/>
 
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0"
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,25,0,0"
                                     Visibility="{Binding IsBilanzSelected, Converter={StaticResource BoolToVis}}">
 
                             <RadioButton GroupName="SubType" Content="Einzelunternehmen" IsChecked="{Binding IsEinzelunternehmen}"
-                                         Foreground="White" FontSize="16" Margin="0,0,20,0" VerticalContentAlignment="Center"/>
+                                         Style="{StaticResource ModernRadioButton}" Margin="0,0,20,0"/>
 
                             <RadioButton GroupName="SubType" Content="Gesellschaft" IsChecked="{Binding IsGesellschaft}"
-                                         Foreground="White" FontSize="16" VerticalContentAlignment="Center"/>
+                                         Style="{StaticResource ModernRadioButton}"/>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
 
                 <Grid Grid.Row="2" Margin="0,20,0,0">
                     <Button Content="Zurück" Command="{Binding ZurueckCommand}" 
-                            Width="150" Height="45" FontSize="16" HorizontalAlignment="Left"
+                            Width="140" Height="45" FontSize="16" HorizontalAlignment="Left"
                             Background="#20FFFFFF" Foreground="White">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
