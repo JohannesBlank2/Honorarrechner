@@ -39,7 +39,7 @@ namespace HonorarRechner.Wpf.ViewModels
             NavigateToJaCommand = new RelayCommand(_ => NavigateToJaRequested?.Invoke());
             NavigateToLohnCommand = new RelayCommand(_ => NavigateToLohnRequested?.Invoke());
 
-            // Sofort rechnen, damit die Spalten gefüllt sind
+            // Sofort rechnen
             Recalculate();
         }
 
@@ -125,47 +125,43 @@ namespace HonorarRechner.Wpf.ViewModels
             var daten = GlobalState.Instance.Daten;
             var werte = GlobalState.Instance.Werte;
 
-            // 1. Gesamtsumme (unten im Footer) aktualisieren
-            // Der Service nutzt bereits die korrekte Logik (nur was ausgewählt ist).
+            // 1. Gesamtsumme (Footer)
             var gesamt = _honorarService.BerechneAlles();
             _jahresHonorar = gesamt.JahresHonorar;
 
-            // 2. Vorschau-Werte für die Spalten berechnen
+            // 2. Vorschau-Werte (Spalten)
 
-            // --- FiBu Vorschau ---
+            // --- FiBu ---
             decimal fibuVal = _honorarService.BerechneFibu(daten, werte);
             FiBuMonatlichFormatted = (fibuVal / 12m).ToString("C");
             FiBuJaehrlichFormatted = fibuVal.ToString("C");
 
-            // --- JA Vorschau ---
-            // HIER WAR DER FEHLER: Wir dürfen nicht raten (if Bilanzsumme > 0).
-            // Wir müssen strikt prüfen, was der User im JA-Menü ausgewählt hat.
+            // --- JA Vorschau (FIX HIER) ---
             decimal jaVal = 0;
 
+            // Wir prüfen strikt den Typ, anstatt zu raten.
             if (daten.JahresabschlussTyp == "EÜR")
             {
                 jaVal = _honorarService.BerechneEuer(daten, werte);
             }
             else if (daten.JahresabschlussTyp == "Bilanz")
             {
-                // Bilanz ist aktuell explizit 0 (Logic "erstmal nix"), bis wir das freischalten.
-                jaVal = 0;
-                // Später, wenn Bilanz aktiv sein soll:
-                // jaVal = _honorarService.BerechneBilanz(daten, werte);
+                // Jetzt wird explizit die Bilanz berechnet, wenn Bilanz ausgewählt ist.
+                jaVal = _honorarService.BerechneBilanz(daten, werte);
             }
-            // Wenn "NIX" ausgewählt ist, bleibt es 0.
+            // Wenn "NIX" gewählt ist, bleibt es 0.
 
             JAMonatlichFormatted = (jaVal / 12m).ToString("C");
             JAJaehrlichFormatted = jaVal.ToString("C");
 
-            // --- Lohn Vorschau ---
+            // --- Lohn ---
             decimal lohnVal = _honorarService.BerechneLohn(daten.AnzahlMitarbeiter, werte);
             LohnMonatlichFormatted = (lohnVal / 12m).ToString("C");
             LohnJaehrlichFormatted = lohnVal.ToString("C");
 
-            // --- Selbstbucher Vorschau (+20% auf JA) ---
+            // --- Selbstbucher ---
             decimal selbstbucherVal = 0;
-            if (jaVal > 0) // Nur berechnen, wenn JA auch einen Wert hat
+            if (jaVal > 0)
             {
                 selbstbucherVal = jaVal * 0.20m;
             }
