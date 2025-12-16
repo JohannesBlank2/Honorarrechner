@@ -126,13 +126,11 @@ namespace HonorarRechner.Wpf.ViewModels
             var werte = GlobalState.Instance.Werte;
 
             // 1. Gesamtsumme (unten im Footer) aktualisieren
-            // Das HonorarService berücksichtigt hierbei, welche Checkboxen AN sind.
+            // Der Service nutzt bereits die korrekte Logik (nur was ausgewählt ist).
             var gesamt = _honorarService.BerechneAlles();
             _jahresHonorar = gesamt.JahresHonorar;
 
             // 2. Vorschau-Werte für die Spalten berechnen
-            // Hier rufen wir die Berechnungen explizit auf, EGAL ob die Checkbox an ist oder nicht.
-            // So sieht der Nutzer: "Was würde es kosten, wenn ich es buche?"
 
             // --- FiBu Vorschau ---
             decimal fibuVal = _honorarService.BerechneFibu(daten, werte);
@@ -140,15 +138,23 @@ namespace HonorarRechner.Wpf.ViewModels
             FiBuJaehrlichFormatted = fibuVal.ToString("C");
 
             // --- JA Vorschau ---
+            // HIER WAR DER FEHLER: Wir dürfen nicht raten (if Bilanzsumme > 0).
+            // Wir müssen strikt prüfen, was der User im JA-Menü ausgewählt hat.
             decimal jaVal = 0;
-            if (daten.Bilanzsumme > 0)
-            {
-                jaVal = _honorarService.BerechneBilanz(daten, werte);
-            }
-            else if (daten.UmsatzImJahr > 0 || daten.Jahresueberschuss > 0)
+
+            if (daten.JahresabschlussTyp == "EÜR")
             {
                 jaVal = _honorarService.BerechneEuer(daten, werte);
             }
+            else if (daten.JahresabschlussTyp == "Bilanz")
+            {
+                // Bilanz ist aktuell explizit 0 (Logic "erstmal nix"), bis wir das freischalten.
+                jaVal = 0;
+                // Später, wenn Bilanz aktiv sein soll:
+                // jaVal = _honorarService.BerechneBilanz(daten, werte);
+            }
+            // Wenn "NIX" ausgewählt ist, bleibt es 0.
+
             JAMonatlichFormatted = (jaVal / 12m).ToString("C");
             JAJaehrlichFormatted = jaVal.ToString("C");
 
@@ -159,7 +165,7 @@ namespace HonorarRechner.Wpf.ViewModels
 
             // --- Selbstbucher Vorschau (+20% auf JA) ---
             decimal selbstbucherVal = 0;
-            if (jaVal > 0)
+            if (jaVal > 0) // Nur berechnen, wenn JA auch einen Wert hat
             {
                 selbstbucherVal = jaVal * 0.20m;
             }
