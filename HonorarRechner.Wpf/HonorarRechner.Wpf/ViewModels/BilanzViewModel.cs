@@ -31,15 +31,12 @@ namespace HonorarRechner.Wpf.ViewModels
             OpenExcelCommand = new RelayCommand(_ => MessageBox.Show("Open Excel"));
             UpdateExcelCommand = new RelayCommand(_ => MessageBox.Show("Update Excel"));
 
-            Recalculate();
-        }
+            // 1. Initialisierung: Werte aus GlobalState berechnen
+            InitializeBaseValues();
 
-        // --- Shell ---
-        public string ViewTitle => "Bilanz";
-        private string _jahresHonorarText = "Jahres Honorar: 0,00 €";
-        public string JahresHonorarText { get => _jahresHonorarText; set { _jahresHonorarText = value; OnPropertyChanged(); } }
-        private string _monatsHonorarText = "Monats Honorar: 0,00 €";
-        public string MonatsHonorarText { get => _monatsHonorarText; set { _monatsHonorarText = value; OnPropertyChanged(); } }
+            // 2. Fees berechnen
+            RecalculateFees();
+        }
 
         // --- Commands ---
         public ICommand ZurueckCommand { get; }
@@ -47,47 +44,94 @@ namespace HonorarRechner.Wpf.ViewModels
         public ICommand UpdateExcelCommand { get; }
         public ICommand? WeiterCommand => null;
 
-        // --- Properties ---
+        // --- Shell Properties ---
+        public string ViewTitle => "Bilanz";
+        private string _jahresHonorarText = "Jahres Honorar: 0,00 €";
+        public string JahresHonorarText { get => _jahresHonorarText; set { _jahresHonorarText = value; OnPropertyChanged(); } }
+        private string _monatsHonorarText = "Monats Honorar: 0,00 €";
+        public string MonatsHonorarText { get => _monatsHonorarText; set { _monatsHonorarText = value; OnPropertyChanged(); } }
+
+        // --- Helper: Formatierung ---
         private string ToEuro(decimal d) => d.ToString("C", _deCulture);
 
-        // 1. AdJ
+        // Hilfsfunktion für den Setter: String -> Decimal parsen
+        private void SetDecimal(string input, ref decimal field, [CallerMemberName] string? propName = null)
+        {
+            // Entfernt Währungssymbole und Leerzeichen für das Parsen
+            string clean = input.Replace("€", "").Trim();
+            if (decimal.TryParse(clean, NumberStyles.Any, _deCulture, out decimal result))
+            {
+                field = result;
+                RecalculateFees(); // Nach Eingabe neu rechnen
+            }
+            // Immer Event feuern, damit Formatierung (z.B. "C") wieder angewendet wird
+            OnPropertyChanged(propName);
+        }
+
+        // --- Properties (Inputs) ---
+
+        // 1. Aufstellung (AdJ)
         private decimal _aufstellungWert;
-        public string AufstellungInput => ToEuro(_aufstellungWert);
+        public string AufstellungInput
+        {
+            get => ToEuro(_aufstellungWert);
+            set => SetDecimal(value, ref _aufstellungWert);
+        }
         public string AufstellungSatz => $"{_werte.AdJSatz * 10:0}/10";
         private decimal _aufstellungGebuehr;
         public string AufstellungText => ToEuro(_aufstellungGebuehr);
 
         // 2. Antrag
         private decimal _antragWert;
-        public string AntragInput => ToEuro(_antragWert);
+        public string AntragInput
+        {
+            get => ToEuro(_antragWert);
+            set => SetDecimal(value, ref _antragWert);
+        }
         public string AntragSatz => $"{_werte.AntragSatz * 10:0}/10";
         private decimal _antragGebuehr;
         public string AntragText => ToEuro(_antragGebuehr);
 
         // 3. Steuerbilanz
         private decimal _steuerbilanzWert;
-        public string SteuerbilanzInput => ToEuro(_steuerbilanzWert);
+        public string SteuerbilanzInput
+        {
+            get => ToEuro(_steuerbilanzWert);
+            set => SetDecimal(value, ref _steuerbilanzWert);
+        }
         public string SteuerbilanzSatz => $"{_werte.SteuerbilanzSatz * 10:0}/10";
         private decimal _steuerbilanzGebuehr;
         public string SteuerbilanzText => ToEuro(_steuerbilanzGebuehr);
 
-        // 4. Körperschaftsteuer (WICHTIG: 0 bei EU)
+        // 4. KSt
         private decimal _koerperschaftWert;
-        public string KoerperschaftInput => ToEuro(_koerperschaftWert);
+        public string KoerperschaftInput
+        {
+            get => ToEuro(_koerperschaftWert);
+            set => SetDecimal(value, ref _koerperschaftWert);
+        }
         public string KoerperschaftSatz => $"{_werte.KoerperschaftSatz * 10:0}/10";
         private decimal _koerperschaftGebuehr;
         public string KoerperschaftText => ToEuro(_koerperschaftGebuehr);
 
-        // 5. Umsatzsteuer
+        // 5. USt
         private decimal _ustWert;
-        public string UstInput => ToEuro(_ustWert);
+        public string UstInput
+        {
+            get => ToEuro(_ustWert);
+            set => SetDecimal(value, ref _ustWert);
+        }
         public string UstSatz => $"{_werte.UstKjSatz * 10:0}/10";
         private decimal _ustGebuehr;
         public string UstText => ToEuro(_ustGebuehr);
 
-        // 6. Gewerbesteuer
+        // 6. Gewerbe
         private decimal _gewerbeWert;
-        public string GewerbeInput => ToEuro(_gewerbeWert);
+        public string GewerbeInput
+        {
+            get => ToEuro(_gewerbeWert);
+            set => SetDecimal(value, ref _gewerbeWert);
+        }
         public string GewerbeSatz => $"{_werte.GewStErklSatz * 10:0}/10";
         private decimal _gewerbeGebuehr;
         public string GewerbeText => ToEuro(_gewerbeGebuehr);
@@ -102,7 +146,7 @@ namespace HonorarRechner.Wpf.ViewModels
                 if (int.TryParse(value, out int result))
                 {
                     _bescheidAnzahlInt = result;
-                    Recalculate();
+                    RecalculateFees();
                 }
                 OnPropertyChanged();
             }
@@ -121,83 +165,114 @@ namespace HonorarRechner.Wpf.ViewModels
 
 
         // --- LOGIK ---
-        private void Recalculate()
+
+        private void InitializeBaseValues()
         {
+            // Einmaliges Laden der Basiswerte aus den Unternehmensdaten
+            // Damit werden die Boxen beim Start gefüllt.
+
             decimal umsatz = _daten.UmsatzImJahr;
             decimal bilanzSumme = _daten.Bilanzsumme;
             decimal gewinn = _daten.Jahresueberschuss;
 
-            // Mittelwert für Bilanz
+            // Mittelwert
             decimal mittelwert = (umsatz + bilanzSumme) / 2m;
 
-            // 1. Aufstellung
+            // Zuweisung zu den Feldern (mit Min-Wert Prüfung)
             _aufstellungWert = Math.Max(mittelwert, _werte.AdJMin);
+            _antragWert = Math.Max(mittelwert, _werte.AntragMin);
+            _steuerbilanzWert = Math.Max(mittelwert, _werte.SteuerbilanzMin);
+
+            // KSt (Nur Gesellschaft)
+            if (_daten.UnternehmensArt == "GESELLSCHAFT")
+            {
+                _koerperschaftWert = Math.Max(gewinn, _werte.KoerperschaftMin);
+            }
+            else
+            {
+                _koerperschaftWert = 0;
+            }
+
+            _ustWert = Math.Max(umsatz * 0.1m, _werte.UstKjMin);
+            _gewerbeWert = Math.Max(gewinn, _werte.GewStErklMin);
+        }
+
+        private void RecalculateFees()
+        {
+            // Berechnet die Gebühren basierend auf den (ggf. editierten) Gegenstandswerten
+
+            // 1. Aufstellung
             double v1 = _rechner.BerechneVolleGebuehrAbschluss((double)_aufstellungWert);
             _aufstellungGebuehr = (decimal)v1 * _werte.AdJSatz;
 
             // 2. Antrag
-            _antragWert = Math.Max(mittelwert, _werte.AntragMin);
             double v2 = _rechner.BerechneVolleGebuehrAbschluss((double)_antragWert);
             _antragGebuehr = (decimal)v2 * _werte.AntragSatz;
 
             // 3. Steuerbilanz
-            _steuerbilanzWert = Math.Max(mittelwert, _werte.SteuerbilanzMin);
             double v3 = _rechner.BerechneVolleGebuehrAbschluss((double)_steuerbilanzWert);
             _steuerbilanzGebuehr = (decimal)v3 * _werte.SteuerbilanzSatz;
 
-            // 4. KSt -> NUR BEI GESELLSCHAFT
-            if (_daten.UnternehmensArt == "GESELLSCHAFT")
+            // 4. KSt
+            if (_koerperschaftWert > 0)
             {
-                _koerperschaftWert = Math.Max(gewinn, _werte.KoerperschaftMin);
                 double v4 = _rechner.BerechneVolleGebuehrBeratung((double)_koerperschaftWert);
                 _koerperschaftGebuehr = (decimal)v4 * _werte.KoerperschaftSatz;
             }
             else
             {
-                _koerperschaftWert = 0;
                 _koerperschaftGebuehr = 0;
             }
 
             // 5. USt
-            _ustWert = Math.Max(umsatz * 0.1m, _werte.UstKjMin);
             double v5 = _rechner.BerechneVolleGebuehrBeratung((double)_ustWert);
             _ustGebuehr = (decimal)v5 * _werte.UstKjSatz;
 
-            // 6. Gewerbesteuer
-            _gewerbeWert = Math.Max(gewinn, _werte.GewStErklMin);
+            // 6. Gewerbe
             double v6 = _rechner.BerechneVolleGebuehrBeratung((double)_gewerbeWert);
             _gewerbeGebuehr = (decimal)v6 * _werte.GewStErklSatz;
 
             // 7. Bescheide
             _bescheidGebuehr = _bescheidAnzahlInt * _werte.BilanzBescheidSatz;
 
-            // Summe
+            // Summen
             decimal calcTotal = _aufstellungGebuehr + _antragGebuehr + _steuerbilanzGebuehr +
                                 _koerperschaftGebuehr + _ustGebuehr + _gewerbeGebuehr +
                                 _bescheidGebuehr + _werte.E_BilanzPauschale + _werte.OffenlegungPauschale;
 
-            // Minimum prüfen
             decimal min = (_daten.UnternehmensArt == "GESELLSCHAFT" ? _werte.BilanzMinGesMonat : _werte.BilanzMinEuMonat) * 12;
             _zwischenSummeJahr = Math.Max(calcTotal, min);
 
-            // --- Footer ---
+            // Footer (Gesamt)
             var gesamt = _honorarService.BerechneAlles();
             JahresHonorarText = $"Jahres Honorar: {gesamt.JahresHonorar:C}";
             MonatsHonorarText = $"Monats Honorar: {(gesamt.JahresHonorar / 12m):C}";
 
+            // UI Refresh für alles
             NotifyAllPropertiesChanged();
         }
 
         private void NotifyAllPropertiesChanged()
         {
-            OnPropertyChanged(nameof(AufstellungInput)); OnPropertyChanged(nameof(AufstellungSatz)); OnPropertyChanged(nameof(AufstellungText));
-            OnPropertyChanged(nameof(AntragInput)); OnPropertyChanged(nameof(AntragSatz)); OnPropertyChanged(nameof(AntragText));
-            OnPropertyChanged(nameof(SteuerbilanzInput)); OnPropertyChanged(nameof(SteuerbilanzSatz)); OnPropertyChanged(nameof(SteuerbilanzText));
-            OnPropertyChanged(nameof(KoerperschaftInput)); OnPropertyChanged(nameof(KoerperschaftSatz)); OnPropertyChanged(nameof(KoerperschaftText));
-            OnPropertyChanged(nameof(UstInput)); OnPropertyChanged(nameof(UstSatz)); OnPropertyChanged(nameof(UstText));
-            OnPropertyChanged(nameof(GewerbeInput)); OnPropertyChanged(nameof(GewerbeSatz)); OnPropertyChanged(nameof(GewerbeText));
-            OnPropertyChanged(nameof(BescheidText)); OnPropertyChanged(nameof(EBilanzText)); OnPropertyChanged(nameof(OffenlegungText));
-            OnPropertyChanged(nameof(ZwischenSummeJahr)); OnPropertyChanged(nameof(ZwischenSummeMonat));
+            // Inputs
+            OnPropertyChanged(nameof(AufstellungInput));
+            OnPropertyChanged(nameof(AntragInput));
+            OnPropertyChanged(nameof(SteuerbilanzInput));
+            OnPropertyChanged(nameof(KoerperschaftInput));
+            OnPropertyChanged(nameof(UstInput));
+            OnPropertyChanged(nameof(GewerbeInput));
+
+            // Ergebnisse
+            OnPropertyChanged(nameof(AufstellungText));
+            OnPropertyChanged(nameof(AntragText));
+            OnPropertyChanged(nameof(SteuerbilanzText));
+            OnPropertyChanged(nameof(KoerperschaftText));
+            OnPropertyChanged(nameof(UstText));
+            OnPropertyChanged(nameof(GewerbeText));
+
+            OnPropertyChanged(nameof(BescheidText));
+            OnPropertyChanged(nameof(ZwischenSummeJahr));
+            OnPropertyChanged(nameof(ZwischenSummeMonat));
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
