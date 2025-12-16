@@ -14,268 +14,183 @@ namespace HonorarRechner.Wpf.ViewModels
         public event Action? ZurueckRequested;
         private readonly CultureInfo _deCulture = CultureInfo.GetCultureInfo("de-DE");
 
-        // Referenzen auf die globalen Daten und Services
+        // Daten aus GlobalState
         private readonly UnternehmensDaten _daten;
         private readonly TabellenWerte _werte;
         private readonly GebuehrenRechner _rechner;
 
         public EuerViewModel()
         {
-            // 1. Zugriff auf GlobalState initialisieren
-            // Hier holen wir uns die Instanz, die im vorherigen Schritt befüllt wurde.
-            _daten = GlobalState.Instance.Daten;
-            var werte = GlobalState.Instance.Werte;
+            // Initialisierung
             var globalState = GlobalState.Instance;
+            _daten = globalState.Daten;
             _werte = globalState.Werte;
             _rechner = new GebuehrenRechner();
 
-            // Commands
             ZurueckCommand = new RelayCommand(_ => ZurueckRequested?.Invoke());
 
-            // Dummy Commands für Excel (können später implementiert werden)
-            OpenExcelCommand = new RelayCommand(_ => MessageBox.Show("Funktion noch nicht implementiert"));
-            UpdateExcelCommand = new RelayCommand(_ =>
-            {
-                // Beispiel: Neu laden und neu berechnen
-                // new ExcelWerteService().LadeWerte(...);
-                Recalculate();
-            });
-
-            // Initial einmal berechnen
+            // Berechnung starten
             Recalculate();
         }
 
-        // --- Shell Properties ---
-        public string ViewTitle => "Einnahmen-Überschuss-Rechnung (EÜR)";
-
-        // Commands
         public ICommand ZurueckCommand { get; }
-        public ICommand OpenExcelCommand { get; }
-        public ICommand UpdateExcelCommand { get; }
 
-        // Hilfsfunktion für Formatierung
         private string ToEuro(decimal value) => value.ToString("C", _deCulture);
 
-        // -------------------------------------------------------------------------
-        // Berechnete Eigenschaften für die View (Binding Sources)
-        // -------------------------------------------------------------------------
+        // --- PROPERTIES FÜR DIE VIEW (Exakt passend zu den XAML Bindings) ---
 
-        // 1. Betriebs-Einnahmen/Ausgaben (BEA)
-        private decimal _beaGebuehr;
-        public string BeaGebuehrText => ToEuro(_beaGebuehr);
-
-        // Form1: tB_BEA zeigt den Gegenstandswert an (entweder Gewinn oder Min-Wert)
+        // 1. BEA
         private decimal _beaGegenstandswert;
-        public string BeaGegenstandswertText => ToEuro(_beaGegenstandswert);
+        public string BeaInput
+        {
+            get => ToEuro(_beaGegenstandswert);
+            set { OnPropertyChanged(); } // Setter nötig für TwoWay-Binding, auch wenn wir den Wert berechnen
+        }
+        public string BeaSatz => $"{_werte.BeaSatz:0.##}"; // z.B. 20/10
 
-        public string BeaSatzText => $"{_werte.BeaSatz:0.00}"; // Anzeige des Satzes
+        private decimal _beaGebuehr;
+        public string BeaResultText => ToEuro(_beaGebuehr);
 
         // 2. Gewerbesteuer
-        private decimal _gewerbeGebuehr;
-        public string GewerbeGebuehrText => ToEuro(_gewerbeGebuehr);
-
         private decimal _gewerbeGegenstandswert;
-        public string GewerbeGegenstandswertText => ToEuro(_gewerbeGegenstandswert);
+        public string GewerbeInput
+        {
+            get => ToEuro(_gewerbeGegenstandswert);
+            set { OnPropertyChanged(); }
+        }
+        public string GewerbeSatz => $"{_werte.GewerbeSatz:0.##}";
 
-        public string GewerbeSatzText => $"{_werte.GewerbeSatz:0.00}";
+        private decimal _gewerbeGebuehr;
+        public string GewerbeResultText => ToEuro(_gewerbeGebuehr);
 
-        // 3. Überschuss der Betriebseinnahmen (UdB) -> Nur sichtbar/berechnet wenn HatUeberschussRechnung true
-        private decimal _uedbGebuehr;
-        public string UedbGebuehrText => ToEuro(_uedbGebuehr);
+        // 3. Überschuss (UdB) -> Checkbox steuert GlobalState
+        public bool IsUeberschussSelected
+        {
+            get => _daten.HatUeberschussRechnung;
+            set
+            {
+                if (_daten.HatUeberschussRechnung != value)
+                {
+                    _daten.HatUeberschussRechnung = value;
+                    OnPropertyChanged();
+                    Recalculate(); // Neu berechnen wenn Checkbox geklickt wird
+                }
+            }
+        }
 
         private decimal _uedbGegenstandswert;
-        public string UedbGegenstandswertText => ToEuro(_uedbGegenstandswert);
+        public string UedbInput
+        {
+            get => ToEuro(_uedbGegenstandswert);
+            set { OnPropertyChanged(); }
+        }
+        public string UedbSatz => $"{_werte.UedbSatz:0.##}";
 
-        // Property für die Sichtbarkeit in der View (kann man an Visibility binden via Converter)
-        public bool ZeigeUedb => _daten.HatUeberschussRechnung;
-        public string UedbSatzText => $"{_werte.UedbSatz:0.00}";
+        private decimal _uedbGebuehr;
+        public string UedbResultText => ToEuro(_uedbGebuehr);
 
-        // 4. Umsatzsteuererklärung
-        private decimal _ustGebuehr;
-        public string UstGebuehrText => ToEuro(_ustGebuehr);
-
+        // 4. Umsatzsteuer
         private decimal _ustGegenstandswert;
-        public string UstGegenstandswertText => ToEuro(_ustGegenstandswert);
+        public string UstInput
+        {
+            get => ToEuro(_ustGegenstandswert);
+            set { OnPropertyChanged(); }
+        }
+        public string UstSatz => $"{_werte.UstSatz:0.##}";
 
-        public string UstSatzText => $"{_werte.UstSatz:0.00}";
+        private decimal _ustGebuehr;
+        public string UstResultText => ToEuro(_ustGebuehr);
 
-        // 5. Pauschale für Abschlussarbeiten
+        // 5. Pauschale
+        // In Form1 war "int AnzahlPauschalen = 3;" fest codiert.
+        private int _pauschaleAnzahl = 3;
+        public string PauschaleInput
+        {
+            get => _pauschaleAnzahl.ToString();
+            set
+            {
+                // Falls man es editierbar machen will, könnte man es hier parsen
+                OnPropertyChanged();
+            }
+        }
+
         private decimal _pauschaleGebuehr;
-        public string PauschaleGebuehrText => ToEuro(_pauschaleGebuehr);
-        public string PauschaleAnzahlText => "3"; // Festwert aus Form1: "int AnzahlPauschalen = 3;"
-
-        // --- Gesamtsummen ---
-        private decimal _summeJahr;
-        public string JahresGesamtText => ToEuro(_summeJahr); // Binding für l_EURWS / labelEURZWJA
-        public string MonatsAnteilText => ToEuro(_summeJahr / 12); // Binding für l_EURWSMonatlich
-
-        // Form1: l_EURMin -> "min. " + ...
-        public string MinJahresGebuehrText => "min. " + ToEuro(_werte.EurMinMonat * 12);
+        public string PauschaleResultText => ToEuro(_pauschaleGebuehr);
 
 
-        // -------------------------------------------------------------------------
-        // Logik (Portierung aus Form1.cs)
-        // -------------------------------------------------------------------------
+        // --- BERECHNUNGSLOGIK (aus Form1 übernommen) ---
 
         private void Recalculate()
         {
-            // 1. BEA (Betriebs Einnahmen-Ausgaben)
-            CalcBEA();
+            // 1. BEA
+            decimal gewinn = _daten.Jahresueberschuss;
+            decimal minGewinnBea = _werte.BeaMin;
+            _beaGegenstandswert = (gewinn < minGewinnBea) ? minGewinnBea : gewinn;
 
-            // 2. Gewerbesteuer
-            CalcGewerbesteuer();
+            double volleGebuehrBea = _rechner.BerechneVolleGebuehrAbschluss((double)_beaGegenstandswert);
+            _beaGebuehr = (decimal)volleGebuehrBea * _werte.BeaSatz;
 
-            // 3. UdB (Überschuss der Betriebseinnahmen)
-            // Form1 Logik: if (cB_UdB.Checked) ...
+            // 2. Gewerbe
+            decimal minGewinnGew = _werte.GewerbeMin;
+            _gewerbeGegenstandswert = (gewinn < minGewinnGew) ? minGewinnGew : gewinn;
+
+            double volleGebuehrGew = _rechner.BerechneVolleGebuehrBeratung((double)_gewerbeGegenstandswert);
+            _gewerbeGebuehr = (decimal)volleGebuehrGew * _werte.GewerbeSatz;
+
+            // 3. UdB
             if (_daten.HatUeberschussRechnung)
             {
-                CalcUEdB();
+                decimal minGewinnUedb = _werte.UedbMin;
+                _uedbGegenstandswert = (gewinn < minGewinnUedb) ? minGewinnUedb : gewinn;
+
+                double volleGebuehrUedb = _rechner.BerechneVolleGebuehrAbschluss((double)_uedbGegenstandswert);
+                _uedbGebuehr = (decimal)volleGebuehrUedb * _werte.UedbSatz;
             }
             else
             {
-                _uedbGebuehr = 0;
                 _uedbGegenstandswert = 0;
+                _uedbGebuehr = 0;
             }
 
-            // 4. Umsatzsteuererklärung
-            CalcUmsatzsteuererklaerung();
+            // 4. Umsatzsteuer
+            decimal umsatz = _daten.UmsatzImJahr;
+            decimal minUmsatz = _werte.UstMin;
+            _ustGegenstandswert = (umsatz < minUmsatz) ? minUmsatz : umsatz;
+
+            double volleGebuehrUst = _rechner.BerechneVolleGebuehrBeratung((double)_ustGegenstandswert);
+            _ustGebuehr = (decimal)volleGebuehrUst * _werte.UstSatz;
 
             // 5. Pauschale
-            CalcPauschalefuerAbschlussarbeiten();
+            _pauschaleGebuehr = _pauschaleAnzahl * _werte.AbschlussPauschaleSatz;
 
-            // Gesamtsumme berechnen
-            // Form1: CalcCompleteEUR
-            decimal completeEur = _beaGebuehr + _gewerbeGebuehr + _uedbGebuehr + _ustGebuehr + _pauschaleGebuehr;
 
-            // Minimum Prüfung
-            decimal minJahr = _werte.EurMinMonat * 12; // CompleteEURminMonat * 12
-
-            if (completeEur < minJahr)
-            {
-                _summeJahr = minJahr;
-            }
-            else
-            {
-                _summeJahr = completeEur;
-            }
-
-            // UI aktualisieren
+            // UI Updates
             NotifyAllPropertiesChanged();
-        }
-
-        private void CalcBEA()
-        {
-            // Form1: double Gewinn = Jahresueberschuss;
-            decimal gewinn = _daten.Jahresueberschuss;
-            decimal minGewinn = _werte.BeaMin; // BEAminBeitrag aus Excel
-
-            if (gewinn < minGewinn)
-            {
-                _beaGegenstandswert = minGewinn;
-            }
-            else
-            {
-                _beaGegenstandswert = gewinn;
-            }
-
-            // Rechner aufrufen (Cast auf double notwendig, da GebuehrenRechner alt ist)
-            // Form1: BerechneVolleGebuehrAbschluss (Tabelle C)
-            double volleGebuehr = _rechner.BerechneVolleGebuehrAbschluss((double)_beaGegenstandswert);
-
-            // Form1: volleGebuehr * BetriebsEinnahmenAusgabenSatz
-            _beaGebuehr = (decimal)volleGebuehr * _werte.BeaSatz;
-        }
-
-        private void CalcGewerbesteuer()
-        {
-            decimal gewinn = _daten.Jahresueberschuss;
-            decimal minGewinn = _werte.GewerbeMin;
-
-            if (gewinn < minGewinn)
-            {
-                _gewerbeGegenstandswert = minGewinn;
-            }
-            else
-            {
-                _gewerbeGegenstandswert = gewinn;
-            }
-
-            // Form1: BerechneVolleGebuehrBeratung (Tabelle A)
-            double volleGebuehr = _rechner.BerechneVolleGebuehrBeratung((double)_gewerbeGegenstandswert);
-
-            _gewerbeGebuehr = (decimal)volleGebuehr * _werte.GewerbeSatz;
-        }
-
-        private void CalcUEdB()
-        {
-            decimal gewinn = _daten.Jahresueberschuss;
-            decimal minGewinn = _werte.UedbMin;
-
-            if (gewinn < minGewinn)
-            {
-                _uedbGegenstandswert = minGewinn;
-            }
-            else
-            {
-                _uedbGegenstandswert = gewinn;
-            }
-
-            // Form1: BerechneVolleGebuehrAbschluss (Tabelle C)
-            double volleGebuehr = _rechner.BerechneVolleGebuehrAbschluss((double)_uedbGegenstandswert);
-
-            _uedbGebuehr = (decimal)volleGebuehr * _werte.UedbSatz;
-        }
-
-        private void CalcUmsatzsteuererklaerung()
-        {
-            decimal umsatz = _daten.UmsatzImJahr;
-            decimal minUmsatz = _werte.UstMin; // UmsatzsteuererlaerungMinBeitrag
-
-            if (umsatz < minUmsatz)
-            {
-                _ustGegenstandswert = minUmsatz;
-            }
-            else
-            {
-                _ustGegenstandswert = umsatz;
-            }
-
-            // Form1: BerechneVolleGebuehrBeratung (Tabelle A)
-            double volleGebuehr = _rechner.BerechneVolleGebuehrBeratung((double)_ustGegenstandswert);
-
-            _ustGebuehr = (decimal)volleGebuehr * _werte.UstSatz;
-        }
-
-        private void CalcPauschalefuerAbschlussarbeiten()
-        {
-            // Form1: int AnzahlPauschalen = 3;
-            int anzahl = 3;
-            _pauschaleGebuehr = anzahl * _werte.AbschlussPauschaleSatz;
         }
 
         private void NotifyAllPropertiesChanged()
         {
-            OnPropertyChanged(nameof(BeaGebuehrText));
-            OnPropertyChanged(nameof(BeaGegenstandswertText));
+            OnPropertyChanged(nameof(BeaInput));
+            OnPropertyChanged(nameof(BeaSatz));
+            OnPropertyChanged(nameof(BeaResultText));
 
-            OnPropertyChanged(nameof(GewerbeGebuehrText));
-            OnPropertyChanged(nameof(GewerbeGegenstandswertText));
+            OnPropertyChanged(nameof(GewerbeInput));
+            OnPropertyChanged(nameof(GewerbeSatz));
+            OnPropertyChanged(nameof(GewerbeResultText));
 
-            OnPropertyChanged(nameof(UedbGebuehrText));
-            OnPropertyChanged(nameof(UedbGegenstandswertText));
-            OnPropertyChanged(nameof(ZeigeUedb));
+            OnPropertyChanged(nameof(IsUeberschussSelected));
+            OnPropertyChanged(nameof(UedbInput));
+            OnPropertyChanged(nameof(UedbSatz));
+            OnPropertyChanged(nameof(UedbResultText));
 
-            OnPropertyChanged(nameof(UstGebuehrText));
-            OnPropertyChanged(nameof(UstGegenstandswertText));
+            OnPropertyChanged(nameof(UstInput));
+            OnPropertyChanged(nameof(UstSatz));
+            OnPropertyChanged(nameof(UstResultText));
 
-            OnPropertyChanged(nameof(PauschaleGebuehrText));
-
-            OnPropertyChanged(nameof(JahresGesamtText));
-            OnPropertyChanged(nameof(MonatsAnteilText));
-            OnPropertyChanged(nameof(MinJahresGebuehrText));
+            OnPropertyChanged(nameof(PauschaleInput));
+            OnPropertyChanged(nameof(PauschaleResultText));
         }
 
-        // --- INotifyPropertyChanged Implementation ---
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
