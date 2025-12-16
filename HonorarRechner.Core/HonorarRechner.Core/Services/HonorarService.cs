@@ -43,7 +43,6 @@ namespace HonorarRechner.Core.Services
     /// </summary>
     public class HonorarService
     {
-        // Nutzt jetzt die ausgelagerte Mathe-Klasse
         private readonly GebuehrenRechner _rechner = new GebuehrenRechner();
 
         public HonorarErgebnis BerechneAlles()
@@ -65,19 +64,16 @@ namespace HonorarRechner.Core.Services
             }
 
             // 3. Jahresabschluss
-            // Nur berechnen, wenn JA grundsätzlich aktiviert ist
             if (daten.HatJahresabschluss)
             {
-                // Unterscheidung rein nach dem gewählten Typ (EÜR vs Bilanz)
                 if (daten.JahresabschlussTyp == "EÜR")
                 {
                     ergebnis.JaBeitrag = BerechneEuer(daten, werte);
                 }
                 else if (daten.JahresabschlussTyp == "Bilanz")
                 {
-                    // TODO: Logic für Bilanz später implementieren.
-                    // Aktuell explizit 0, wie gewünscht ("mach erstmal nix").
-                    ergebnis.JaBeitrag = 0;
+                    // Jetzt ist die Bilanz-Berechnung aktiv!
+                    ergebnis.JaBeitrag = BerechneBilanz(daten, werte);
                 }
             }
             else
@@ -101,17 +97,11 @@ namespace HonorarRechner.Core.Services
             return ergebnis;
         }
 
-        // --- Wrapper Methoden (für ViewModels, die nur den Endpreis wollen) ---
-
-        public decimal BerechneLohn(int anzahl, TabellenWerte w)
-            => BerechneLohnDetails(anzahl, w).JahrGesamt;
-
-        public decimal BerechneFibu(UnternehmensDaten d, TabellenWerte w)
-            => BerechneFibuDetails(d, w).JahresGesamt;
-
+        // --- Wrapper Methoden ---
+        public decimal BerechneLohn(int anzahl, TabellenWerte w) => BerechneLohnDetails(anzahl, w).JahrGesamt;
+        public decimal BerechneFibu(UnternehmensDaten d, TabellenWerte w) => BerechneFibuDetails(d, w).JahresGesamt;
 
         // --- Detail-Berechnungen ---
-
         public FibuDetailErgebnis BerechneFibuDetails(UnternehmensDaten d, TabellenWerte w)
         {
             var result = new FibuDetailErgebnis();
@@ -142,17 +132,12 @@ namespace HonorarRechner.Core.Services
             if (anzahl <= 0) return r;
 
             int rest = anzahl;
-
-            // 1. MA
             r.Count1 = rest > 0 ? 1 : 0; r.Preis1 = w.BeitragEins; r.Sum1 = r.Count1 * r.Preis1; rest -= r.Count1;
-
-            // Staffel
             r.Count2_9 = Math.Max(0, Math.Min(rest, 8)); r.Preis2_9 = w.BeitragZweiBisNeun; r.Sum2_9 = r.Count2_9 * r.Preis2_9; rest -= r.Count2_9;
             r.Count10_19 = Math.Max(0, Math.Min(rest, 10)); r.Preis10_19 = w.BeitragZehnBisNeunzehn; r.Sum10_19 = r.Count10_19 * r.Preis10_19; rest -= r.Count10_19;
             r.Count20_49 = Math.Max(0, Math.Min(rest, 30)); r.Preis20_49 = w.BeitragZwanzigBisNeunundvierzig; r.Sum20_49 = r.Count20_49 * r.Preis20_49; rest -= r.Count20_49;
             r.Count50_100 = Math.Max(0, Math.Min(rest, 51)); r.Preis50_100 = w.BeitragFuenfzigBisHundert; r.Sum50_100 = r.Count50_100 * r.Preis50_100; rest -= r.Count50_100;
 
-            // 101+
             r.Count101Plus = Math.Max(0, rest);
             if (r.Count101Plus > 0)
             {
@@ -163,7 +148,6 @@ namespace HonorarRechner.Core.Services
 
             r.MonatGesamt = r.Sum1 + r.Sum2_9 + r.Sum10_19 + r.Sum20_49 + r.Sum50_100 + r.Sum101Plus;
             r.JahrGesamt = r.MonatGesamt * 12;
-
             return r;
         }
 
@@ -171,7 +155,6 @@ namespace HonorarRechner.Core.Services
 
         public decimal BerechneEuer(UnternehmensDaten d, TabellenWerte w)
         {
-            // Die Berechnung bleibt exakt so, wie sie war (da sie laut dir korrekt ist)
             decimal b = (decimal)_rechner.BerechneVolleGebuehrAbschluss((double)Math.Max(d.Jahresueberschuss, w.BeaMin)) * w.BeaSatz;
             decimal g = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.Jahresueberschuss, w.GewerbeMin)) * w.GewerbeSatz;
             decimal u = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.UmsatzImJahr, w.UstMin)) * w.UstSatz;
@@ -186,21 +169,41 @@ namespace HonorarRechner.Core.Services
 
         public decimal BerechneBilanz(UnternehmensDaten d, TabellenWerte w)
         {
-            // Diese Methode bleibt hier liegen, wird aber oben aktuell nicht aufgerufen (JaBeitrag = 0).
+            // Gegenstandswert Bilanz (Aufstellung): Mittelwert aus Umsatz & Bilanzsumme
             decimal mw = (d.UmsatzImJahr + d.Bilanzsumme) / 2m;
 
+            // 1. Abschluss (AdJ)
             decimal t1 = (decimal)_rechner.BerechneVolleGebuehrAbschluss((double)Math.Max(mw, w.AdJMin)) * w.AdJSatz;
+
+            // 2. Antrag / Entwicklung
             decimal t2 = (decimal)_rechner.BerechneVolleGebuehrAbschluss((double)Math.Max(mw, w.AntragMin)) * w.AntragSatz;
+
+            // 3. Steuerbilanz
             decimal t3 = (decimal)_rechner.BerechneVolleGebuehrAbschluss((double)Math.Max(mw, w.SteuerbilanzMin)) * w.SteuerbilanzSatz;
 
-            decimal t4 = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.Jahresueberschuss, w.KoerperschaftMin)) * w.KoerperschaftSatz;
+            // 4. Körperschaftsteuer (NUR bei GESELLSCHAFT)
+            decimal t4 = 0;
+            if (d.UnternehmensArt == "GESELLSCHAFT")
+            {
+                t4 = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.Jahresueberschuss, w.KoerperschaftMin)) * w.KoerperschaftSatz;
+            }
+
+            // 5. Umsatzsteuer
             decimal t5 = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.UmsatzImJahr * 0.1m, w.UstKjMin)) * w.UstKjSatz;
+
+            // 6. Gewerbesteuer
             decimal t6 = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.Jahresueberschuss, w.GewStErklMin)) * w.GewStErklSatz;
 
-            decimal bescheide = 4 * w.BilanzBescheidSatz;
+            // 7. Bescheide (Pauschale Annahme hier, im ViewModel ist es genauer einstellbar)
+            // Wenn Gesellschaft -> oft mehr Bescheide (KSt), aber wir nehmen hier eine Standardzahl
+            int bescheidAnzahl = 4;
+            decimal bescheide = bescheidAnzahl * w.BilanzBescheidSatz;
+
             decimal total = t1 + t2 + t3 + t4 + t5 + t6 + bescheide + w.E_BilanzPauschale + w.OffenlegungPauschale;
 
+            // Minimum (EU vs Gesellschaft)
             decimal min = (d.UnternehmensArt == "GESELLSCHAFT" ? w.BilanzMinGesMonat : w.BilanzMinEuMonat) * 12;
+
             return Math.Max(total, min);
         }
     }
