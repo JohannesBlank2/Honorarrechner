@@ -6,10 +6,39 @@ namespace HonorarRechner.Wpf
 {
     public partial class MainWindow : Window
     {
+        // WICHTIG: Hier speichern wir die Referenz, damit wir sie später benutzen können
+        private readonly StartViewModel _startViewModel;
+
         public MainWindow()
         {
             InitializeComponent();
+            // 1. ViewModel erstellen und speichern
+            _startViewModel = new StartViewModel();
+
+            // 2. Events abonnieren (Navigation)
+            _startViewModel.OpenPrivateRechnerRequested += ShowPrivateFlow;
+
+            // 3. Start-View anzeigen
             ShowStartView();
+        }
+
+        private void ShowPrivateFlow()
+        {
+            var vm = new PrivateDatenViewModel();
+
+            // Navigation zurück zum Start
+            vm.ZurueckRequested += ShowStartView;
+
+            // Navigation Weiter -> zur Leistungs-Auswahl (die wir als nächstes bauen)
+            vm.WeiterRequested += () =>
+            {
+                // Platzhalter, bis wir die PrivateLeistungenView haben
+                MessageBox.Show("Hier geht es gleich weiter zur Leistungsauswahl!");
+                // Später: ShowPrivateLeistungenFlow();
+            };
+
+            var view = new PrivateDatenView { DataContext = vm };
+            MainContent.Content = view;
         }
 
         // --- Start ---
@@ -25,7 +54,7 @@ namespace HonorarRechner.Wpf
         private void OnMandatSelected(string typ)
         {
             if (typ == "Unternehmen") ShowUnternehmensView();
-            else MessageBox.Show("Privat-Mandanten-Maske kommt später 😊");
+            else ShowPrivateFlow();
         }
 
         // --- Unternehmensdaten ---
