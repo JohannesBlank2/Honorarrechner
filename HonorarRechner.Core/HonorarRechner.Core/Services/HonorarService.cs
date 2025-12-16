@@ -3,7 +3,7 @@ using System;
 
 namespace HonorarRechner.Core.Services
 {
-    // --- DTOs für die Detail-Anzeigen ---
+    // DTOs
     public class FibuDetailErgebnis
     {
         public decimal LaufendeMonatlich { get; set; }
@@ -38,9 +38,6 @@ namespace HonorarRechner.Core.Services
         public decimal JahrGesamt { get; set; }
     }
 
-    /// <summary>
-    /// Hauptservice für die Honorarberechnung. Koordiniert die Logik.
-    /// </summary>
     public class HonorarService
     {
         private readonly GebuehrenRechner _rechner = new GebuehrenRechner();
@@ -72,7 +69,6 @@ namespace HonorarRechner.Core.Services
                 }
                 else if (daten.JahresabschlussTyp == "Bilanz")
                 {
-                    // Jetzt ist die Bilanz-Berechnung aktiv!
                     ergebnis.JaBeitrag = BerechneBilanz(daten, werte);
                 }
             }
@@ -97,15 +93,14 @@ namespace HonorarRechner.Core.Services
             return ergebnis;
         }
 
-        // --- Wrapper Methoden ---
+        // --- Wrapper ---
         public decimal BerechneLohn(int anzahl, TabellenWerte w) => BerechneLohnDetails(anzahl, w).JahrGesamt;
         public decimal BerechneFibu(UnternehmensDaten d, TabellenWerte w) => BerechneFibuDetails(d, w).JahresGesamt;
 
-        // --- Detail-Berechnungen ---
+        // --- Details ---
         public FibuDetailErgebnis BerechneFibuDetails(UnternehmensDaten d, TabellenWerte w)
         {
             var result = new FibuDetailErgebnis();
-
             decimal satz = w.FibuNormalSatz;
             if (d.IstBargeldGewerbe) satz = w.BarGeldGewerbeSatz;
             if (d.IstOnlineHaendler) satz = w.OnlineHaendlerSatz;
@@ -122,7 +117,6 @@ namespace HonorarRechner.Core.Services
 
             result.EndsummeMonatlich = Math.Max(result.ZwischensummeMonatlich, w.FibuMinMonatlich);
             result.JahresGesamt = result.EndsummeMonatlich * 12;
-
             return result;
         }
 
@@ -152,7 +146,6 @@ namespace HonorarRechner.Core.Services
         }
 
         // --- JA Berechnungen ---
-
         public decimal BerechneEuer(UnternehmensDaten d, TabellenWerte w)
         {
             decimal b = (decimal)_rechner.BerechneVolleGebuehrAbschluss((double)Math.Max(d.Jahresueberschuss, w.BeaMin)) * w.BeaSatz;
@@ -169,39 +162,24 @@ namespace HonorarRechner.Core.Services
 
         public decimal BerechneBilanz(UnternehmensDaten d, TabellenWerte w)
         {
-            // Gegenstandswert Bilanz (Aufstellung): Mittelwert aus Umsatz & Bilanzsumme
             decimal mw = (d.UmsatzImJahr + d.Bilanzsumme) / 2m;
 
-            // 1. Abschluss (AdJ)
             decimal t1 = (decimal)_rechner.BerechneVolleGebuehrAbschluss((double)Math.Max(mw, w.AdJMin)) * w.AdJSatz;
-
-            // 2. Antrag / Entwicklung
             decimal t2 = (decimal)_rechner.BerechneVolleGebuehrAbschluss((double)Math.Max(mw, w.AntragMin)) * w.AntragSatz;
-
-            // 3. Steuerbilanz
             decimal t3 = (decimal)_rechner.BerechneVolleGebuehrAbschluss((double)Math.Max(mw, w.SteuerbilanzMin)) * w.SteuerbilanzSatz;
 
-            // 4. Körperschaftsteuer (NUR bei GESELLSCHAFT)
-            decimal t4 = 0;
-            if (d.UnternehmensArt == "GESELLSCHAFT")
-            {
-                t4 = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.Jahresueberschuss, w.KoerperschaftMin)) * w.KoerperschaftSatz;
-            }
+            // 4. Körperschaftsteuer (JETZT FÜR ALLE)
+            decimal t4 = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.Jahresueberschuss, w.KoerperschaftMin)) * w.KoerperschaftSatz;
 
-            // 5. Umsatzsteuer
             decimal t5 = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.UmsatzImJahr * 0.1m, w.UstKjMin)) * w.UstKjSatz;
-
-            // 6. Gewerbesteuer
             decimal t6 = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.Jahresueberschuss, w.GewStErklMin)) * w.GewStErklSatz;
 
-            // 7. Bescheide (Pauschale Annahme hier, im ViewModel ist es genauer einstellbar)
-            // Wenn Gesellschaft -> oft mehr Bescheide (KSt), aber wir nehmen hier eine Standardzahl
             int bescheidAnzahl = 4;
             decimal bescheide = bescheidAnzahl * w.BilanzBescheidSatz;
 
             decimal total = t1 + t2 + t3 + t4 + t5 + t6 + bescheide + w.E_BilanzPauschale + w.OffenlegungPauschale;
 
-            // Minimum (EU vs Gesellschaft)
+            // Einziger Unterschied: Das Minimum
             decimal min = (d.UnternehmensArt == "GESELLSCHAFT" ? w.BilanzMinGesMonat : w.BilanzMinEuMonat) * 12;
 
             return Math.Max(total, min);
