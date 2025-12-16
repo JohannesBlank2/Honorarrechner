@@ -65,12 +65,24 @@ namespace HonorarRechner.Core.Services
             }
 
             // 3. Jahresabschluss
+            // Nur berechnen, wenn JA grundsätzlich aktiviert ist
             if (daten.HatJahresabschluss)
             {
-                if (daten.Bilanzsumme > 0)
-                    ergebnis.JaBeitrag = BerechneBilanz(daten, werte);
-                else if (daten.UmsatzImJahr > 0 || daten.Jahresueberschuss > 0)
+                // Unterscheidung rein nach dem gewählten Typ (EÜR vs Bilanz)
+                if (daten.JahresabschlussTyp == "EÜR")
+                {
                     ergebnis.JaBeitrag = BerechneEuer(daten, werte);
+                }
+                else if (daten.JahresabschlussTyp == "Bilanz")
+                {
+                    // TODO: Logic für Bilanz später implementieren.
+                    // Aktuell explizit 0, wie gewünscht ("mach erstmal nix").
+                    ergebnis.JaBeitrag = 0;
+                }
+            }
+            else
+            {
+                ergebnis.JaBeitrag = 0;
             }
 
             // 4. Selbstbucher (+20% auf JA)
@@ -159,6 +171,7 @@ namespace HonorarRechner.Core.Services
 
         public decimal BerechneEuer(UnternehmensDaten d, TabellenWerte w)
         {
+            // Die Berechnung bleibt exakt so, wie sie war (da sie laut dir korrekt ist)
             decimal b = (decimal)_rechner.BerechneVolleGebuehrAbschluss((double)Math.Max(d.Jahresueberschuss, w.BeaMin)) * w.BeaSatz;
             decimal g = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.Jahresueberschuss, w.GewerbeMin)) * w.GewerbeSatz;
             decimal u = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.UmsatzImJahr, w.UstMin)) * w.UstSatz;
@@ -173,6 +186,7 @@ namespace HonorarRechner.Core.Services
 
         public decimal BerechneBilanz(UnternehmensDaten d, TabellenWerte w)
         {
+            // Diese Methode bleibt hier liegen, wird aber oben aktuell nicht aufgerufen (JaBeitrag = 0).
             decimal mw = (d.UmsatzImJahr + d.Bilanzsumme) / 2m;
 
             decimal t1 = (decimal)_rechner.BerechneVolleGebuehrAbschluss((double)Math.Max(mw, w.AdJMin)) * w.AdJSatz;
