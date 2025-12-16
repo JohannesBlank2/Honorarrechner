@@ -19,6 +19,9 @@ namespace HonorarRechner.Wpf.ViewModels
         private readonly TabellenWerte _werte;
         private readonly GebuehrenRechner _rechner;
 
+        // Neu: Service für die Gesamtsumme
+        private readonly HonorarService _honorarService;
+
         public EuerViewModel()
         {
             // Initialisierung
@@ -26,15 +29,42 @@ namespace HonorarRechner.Wpf.ViewModels
             _daten = globalState.Daten;
             _werte = globalState.Werte;
             _rechner = new GebuehrenRechner();
+            _honorarService = new HonorarService(); // Service laden
 
             ZurueckCommand = new RelayCommand(_ => ZurueckRequested?.Invoke());
+
+            // Dummy Commands für die Buttons unten links (damit keine Bindungs-Fehler kommen)
+            OpenExcelCommand = new RelayCommand(_ => MessageBox.Show("Open Excel"));
+            UpdateExcelCommand = new RelayCommand(_ => MessageBox.Show("Update Excel"));
 
             // Berechnung starten
             Recalculate();
         }
 
+        // --- Commands ---
         public ICommand ZurueckCommand { get; }
+        public ICommand OpenExcelCommand { get; }
+        public ICommand UpdateExcelCommand { get; }
+        public ICommand? WeiterCommand => null;
 
+        // --- Shell Properties (Für Titel & Footer) ---
+        public string ViewTitle => "Einnahmenüberschussrechnung (EÜR)";
+
+        private string _jahresHonorarText = "Jahres Honorar: 0,00 €";
+        public string JahresHonorarText
+        {
+            get => _jahresHonorarText;
+            set { _jahresHonorarText = value; OnPropertyChanged(); }
+        }
+
+        private string _monatsHonorarText = "Monats Honorar: 0,00 €";
+        public string MonatsHonorarText
+        {
+            get => _monatsHonorarText;
+            set { _monatsHonorarText = value; OnPropertyChanged(); }
+        }
+
+        // --- Helper ---
         private string ToEuro(decimal value) => value.ToString("C", _deCulture);
 
         // --- PROPERTIES FÜR DIE VIEW (Exakt passend zu den XAML Bindings) ---
@@ -44,10 +74,10 @@ namespace HonorarRechner.Wpf.ViewModels
         public string BeaInput
         {
             get => ToEuro(_beaGegenstandswert);
-            set { OnPropertyChanged(); } // Setter nötig für TwoWay-Binding, auch wenn wir den Wert berechnen
+            set { OnPropertyChanged(); } // Setter nötig für TwoWay-Binding
         }
 
-        // Änderung: Anzeige als Bruch (z.B. 15/10)
+        // Anzeige als Bruch (z.B. 15/10)
         public string BeaSatz => $"{_werte.BeaSatz * 10:0}/10";
 
         private decimal _beaGebuehr;
@@ -61,7 +91,7 @@ namespace HonorarRechner.Wpf.ViewModels
             set { OnPropertyChanged(); }
         }
 
-        // Änderung: Anzeige als Bruch (z.B. 3/10)
+        // Anzeige als Bruch (z.B. 3/10)
         public string GewerbeSatz => $"{_werte.GewerbeSatz * 10:0}/10";
 
         private decimal _gewerbeGebuehr;
@@ -89,7 +119,7 @@ namespace HonorarRechner.Wpf.ViewModels
             set { OnPropertyChanged(); }
         }
 
-        // Änderung: Anzeige als Bruch (z.B. 7/10)
+        // Anzeige als Bruch (z.B. 7/10)
         public string UedbSatz => $"{_werte.UedbSatz * 10:0}/10";
 
         private decimal _uedbGebuehr;
@@ -103,21 +133,19 @@ namespace HonorarRechner.Wpf.ViewModels
             set { OnPropertyChanged(); }
         }
 
-        // Änderung: Anzeige als Bruch (z.B. 3/10)
+        // Anzeige als Bruch (z.B. 3/10)
         public string UstSatz => $"{_werte.UstSatz * 10:0}/10";
 
         private decimal _ustGebuehr;
         public string UstResultText => ToEuro(_ustGebuehr);
 
         // 5. Pauschale
-        // In Form1 war "int AnzahlPauschalen = 3;" fest codiert.
         private int _pauschaleAnzahl = 3;
         public string PauschaleInput
         {
             get => _pauschaleAnzahl.ToString();
             set
             {
-                // Falls man es editierbar machen will, könnte man es hier parsen
                 OnPropertyChanged();
             }
         }
@@ -126,10 +154,12 @@ namespace HonorarRechner.Wpf.ViewModels
         public string PauschaleResultText => ToEuro(_pauschaleGebuehr);
 
 
-        // --- BERECHNUNGSLOGIK (aus Form1 übernommen) ---
+        // --- BERECHNUNGSLOGIK ---
 
         private void Recalculate()
         {
+            // --- Teil 1: Detail-Berechnungen für die Textboxen (wie gehabt) ---
+
             // 1. BEA
             decimal gewinn = _daten.Jahresueberschuss;
             decimal minGewinnBea = _werte.BeaMin;
@@ -172,7 +202,12 @@ namespace HonorarRechner.Wpf.ViewModels
             _pauschaleGebuehr = _pauschaleAnzahl * _werte.AbschlussPauschaleSatz;
 
 
-            // UI Updates
+            // --- Teil 2: Gesamthonorar für den Footer berechnen ---
+            var gesamtErgebnis = _honorarService.BerechneAlles();
+            JahresHonorarText = $"Jahres Honorar: {gesamtErgebnis.JahresHonorar:C}";
+            MonatsHonorarText = $"Monats Honorar: {(gesamtErgebnis.JahresHonorar / 12m):C}";
+
+            // UI Updates für Details
             NotifyAllPropertiesChanged();
         }
 
