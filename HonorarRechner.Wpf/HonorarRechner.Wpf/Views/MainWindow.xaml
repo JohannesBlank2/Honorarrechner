@@ -123,8 +123,17 @@
                                     Style="{StaticResource NavButton}" Margin="0,0,15,0"/>
 
                             <Button Content="Weiter" 
-                                    Command="{Binding Content.DataContext.WeiterCommand, ElementName=MainContent}" 
-                                    Style="{StaticResource NavButton}"/>
+        Command="{Binding Content.DataContext.WeiterCommand, ElementName=MainContent}">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource NavButton}">
+                                        <Style.Triggers>
+                                            <Trigger Property="Command" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
                         </StackPanel>
                     </Grid>
                 </Grid>
