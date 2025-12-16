@@ -46,7 +46,9 @@ namespace HonorarRechner.Wpf.ViewModels
             get => ToEuro(_beaGegenstandswert);
             set { OnPropertyChanged(); } // Setter nötig für TwoWay-Binding, auch wenn wir den Wert berechnen
         }
-        public string BeaSatz => $"{_werte.BeaSatz:0.##}"; // z.B. 20/10
+
+        // Änderung: Anzeige als Bruch (z.B. 15/10)
+        public string BeaSatz => $"{_werte.BeaSatz * 10:0}/10";
 
         private decimal _beaGebuehr;
         public string BeaResultText => ToEuro(_beaGebuehr);
@@ -58,7 +60,9 @@ namespace HonorarRechner.Wpf.ViewModels
             get => ToEuro(_gewerbeGegenstandswert);
             set { OnPropertyChanged(); }
         }
-        public string GewerbeSatz => $"{_werte.GewerbeSatz:0.##}";
+
+        // Änderung: Anzeige als Bruch (z.B. 3/10)
+        public string GewerbeSatz => $"{_werte.GewerbeSatz * 10:0}/10";
 
         private decimal _gewerbeGebuehr;
         public string GewerbeResultText => ToEuro(_gewerbeGebuehr);
@@ -84,7 +88,9 @@ namespace HonorarRechner.Wpf.ViewModels
             get => ToEuro(_uedbGegenstandswert);
             set { OnPropertyChanged(); }
         }
-        public string UedbSatz => $"{_werte.UedbSatz:0.##}";
+
+        // Änderung: Anzeige als Bruch (z.B. 7/10)
+        public string UedbSatz => $"{_werte.UedbSatz * 10:0}/10";
 
         private decimal _uedbGebuehr;
         public string UedbResultText => ToEuro(_uedbGebuehr);
@@ -96,7 +102,9 @@ namespace HonorarRechner.Wpf.ViewModels
             get => ToEuro(_ustGegenstandswert);
             set { OnPropertyChanged(); }
         }
-        public string UstSatz => $"{_werte.UstSatz:0.##}";
+
+        // Änderung: Anzeige als Bruch (z.B. 3/10)
+        public string UstSatz => $"{_werte.UstSatz * 10:0}/10";
 
         private decimal _ustGebuehr;
         public string UstResultText => ToEuro(_ustGebuehr);
