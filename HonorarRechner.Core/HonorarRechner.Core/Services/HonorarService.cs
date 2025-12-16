@@ -3,41 +3,6 @@ using System;
 
 namespace HonorarRechner.Core.Services
 {
-    // DTOs
-    public class FibuDetailErgebnis
-    {
-        public decimal LaufendeMonatlich { get; set; }
-        public decimal AuslagenMonatlich { get; set; }
-        public decimal ItMonatlich { get; set; }
-        public decimal ZwischensummeMonatlich { get; set; }
-        public decimal EndsummeMonatlich { get; set; }
-        public decimal JahresGesamt { get; set; }
-    }
-
-    public class LohnDetailErgebnis
-    {
-        public int Count1 { get; set; }
-        public decimal Preis1 { get; set; }
-        public decimal Sum1 { get; set; }
-        public int Count2_9 { get; set; }
-        public decimal Preis2_9 { get; set; }
-        public decimal Sum2_9 { get; set; }
-        public int Count10_19 { get; set; }
-        public decimal Preis10_19 { get; set; }
-        public decimal Sum10_19 { get; set; }
-        public int Count20_49 { get; set; }
-        public decimal Preis20_49 { get; set; }
-        public decimal Sum20_49 { get; set; }
-        public int Count50_100 { get; set; }
-        public decimal Preis50_100 { get; set; }
-        public decimal Sum50_100 { get; set; }
-        public int Count101Plus { get; set; }
-        public decimal Preis101Plus { get; set; }
-        public decimal Sum101Plus { get; set; }
-        public decimal MonatGesamt { get; set; }
-        public decimal JahrGesamt { get; set; }
-    }
-
     public class HonorarService
     {
         private readonly GebuehrenRechner _rechner = new GebuehrenRechner();
@@ -72,15 +37,16 @@ namespace HonorarRechner.Core.Services
                     ergebnis.JaBeitrag = BerechneBilanz(daten, werte);
                 }
             }
+
+            // 4. Selbstbucher-Logik (+20% auf JA + Lohn)
+            if (daten.IstSelbstbucher)
+            {
+                decimal basis = ergebnis.JaBeitrag + ergebnis.LohnBeitrag;
+                ergebnis.SelbstbucherAbschlag = basis * 0.20m;
+            }
             else
             {
-                ergebnis.JaBeitrag = 0;
-            }
-
-            // 4. Selbstbucher (+20% auf JA)
-            if (daten.IstSelbstbucher && ergebnis.JaBeitrag > 0)
-            {
-                ergebnis.SelbstbucherAbschlag = ergebnis.JaBeitrag * 0.20m;
+                ergebnis.SelbstbucherAbschlag = 0;
             }
 
             // Gesamtsumme
@@ -88,7 +54,7 @@ namespace HonorarRechner.Core.Services
                 ergebnis.LohnBeitrag +
                 ergebnis.FiBuBeitrag +
                 ergebnis.JaBeitrag +
-                (daten.IstSelbstbucher ? ergebnis.SelbstbucherAbschlag : 0);
+                ergebnis.SelbstbucherAbschlag;
 
             return ergebnis;
         }
@@ -124,8 +90,9 @@ namespace HonorarRechner.Core.Services
         {
             var r = new LohnDetailErgebnis();
             if (anzahl <= 0) return r;
-
             int rest = anzahl;
+
+            // Staffelungen
             r.Count1 = rest > 0 ? 1 : 0; r.Preis1 = w.BeitragEins; r.Sum1 = r.Count1 * r.Preis1; rest -= r.Count1;
             r.Count2_9 = Math.Max(0, Math.Min(rest, 8)); r.Preis2_9 = w.BeitragZweiBisNeun; r.Sum2_9 = r.Count2_9 * r.Preis2_9; rest -= r.Count2_9;
             r.Count10_19 = Math.Max(0, Math.Min(rest, 10)); r.Preis10_19 = w.BeitragZehnBisNeunzehn; r.Sum10_19 = r.Count10_19 * r.Preis10_19; rest -= r.Count10_19;
@@ -152,36 +119,22 @@ namespace HonorarRechner.Core.Services
             decimal g = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.Jahresueberschuss, w.GewerbeMin)) * w.GewerbeSatz;
             decimal u = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.UmsatzImJahr, w.UstMin)) * w.UstSatz;
             decimal p = 3 * w.AbschlussPauschaleSatz;
-
-            decimal uedb = 0;
-            if (d.HatUeberschussRechnung)
-                uedb = (decimal)_rechner.BerechneVolleGebuehrAbschluss((double)Math.Max(d.Jahresueberschuss, w.UedbMin)) * w.UedbSatz;
-
+            decimal uedb = d.HatUeberschussRechnung ? (decimal)_rechner.BerechneVolleGebuehrAbschluss((double)Math.Max(d.Jahresueberschuss, w.UedbMin)) * w.UedbSatz : 0;
             return Math.Max(b + g + u + p + uedb, w.EurMinMonat * 12);
         }
 
         public decimal BerechneBilanz(UnternehmensDaten d, TabellenWerte w)
         {
             decimal mw = (d.UmsatzImJahr + d.Bilanzsumme) / 2m;
-
             decimal t1 = (decimal)_rechner.BerechneVolleGebuehrAbschluss((double)Math.Max(mw, w.AdJMin)) * w.AdJSatz;
             decimal t2 = (decimal)_rechner.BerechneVolleGebuehrAbschluss((double)Math.Max(mw, w.AntragMin)) * w.AntragSatz;
             decimal t3 = (decimal)_rechner.BerechneVolleGebuehrAbschluss((double)Math.Max(mw, w.SteuerbilanzMin)) * w.SteuerbilanzSatz;
-
-            // 4. Körperschaftsteuer (JETZT FÜR ALLE)
             decimal t4 = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.Jahresueberschuss, w.KoerperschaftMin)) * w.KoerperschaftSatz;
-
             decimal t5 = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.UmsatzImJahr * 0.1m, w.UstKjMin)) * w.UstKjSatz;
             decimal t6 = (decimal)_rechner.BerechneVolleGebuehrBeratung((double)Math.Max(d.Jahresueberschuss, w.GewStErklMin)) * w.GewStErklSatz;
-
-            int bescheidAnzahl = 4;
-            decimal bescheide = bescheidAnzahl * w.BilanzBescheidSatz;
-
+            decimal bescheide = 4 * w.BilanzBescheidSatz;
             decimal total = t1 + t2 + t3 + t4 + t5 + t6 + bescheide + w.E_BilanzPauschale + w.OffenlegungPauschale;
-
-            // Einziger Unterschied: Das Minimum
             decimal min = (d.UnternehmensArt == "GESELLSCHAFT" ? w.BilanzMinGesMonat : w.BilanzMinEuMonat) * 12;
-
             return Math.Max(total, min);
         }
     }

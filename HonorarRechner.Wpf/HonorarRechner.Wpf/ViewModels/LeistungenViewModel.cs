@@ -17,19 +17,20 @@ namespace HonorarRechner.Wpf.ViewModels
         public event Action? NavigateToLohnRequested;
 
         private readonly HonorarService _honorarService;
+        private readonly UnternehmensDaten _daten; // Datenfeld für direkten Zugriff
 
         public LeistungenViewModel()
         {
             _honorarService = new HonorarService();
-            var d = GlobalState.Instance.Daten;
+            _daten = GlobalState.Instance.Daten;
 
-            // Checkbox-Status laden
-            _fiBu = d.HatFiBu;
-            _ja = d.HatJahresabschluss;
-            _lohn = d.HatLohn;
-            _selbstbucher = d.IstSelbstbucher;
+            // Checkbox-Status initial laden
+            _fiBu = _daten.HatFiBu;
+            _ja = _daten.HatJahresabschluss;
+            _lohn = _daten.HatLohn;
+            _selbstbucher = _daten.IstSelbstbucher;
 
-            // Commands initialisieren
+            // Commands
             OpenExcelCommand = new RelayCommand(_ => MessageBox.Show("Open Excel"));
             UpdateExcelCommand = new RelayCommand(_ => MessageBox.Show("Update Excel"));
             ZurueckCommand = new RelayCommand(_ => ZurueckRequested?.Invoke());
@@ -39,72 +40,90 @@ namespace HonorarRechner.Wpf.ViewModels
             NavigateToJaCommand = new RelayCommand(_ => NavigateToJaRequested?.Invoke());
             NavigateToLohnCommand = new RelayCommand(_ => NavigateToLohnRequested?.Invoke());
 
-            // Sofort rechnen
             Recalculate();
         }
 
-        // --- Shell Header/Footer ---
+        // --- Shell ---
         public string ViewTitle => "Leistungen";
-
         private decimal _jahresHonorar;
         public string JahresHonorarText => $"Jahres Honorar: {_jahresHonorar:C}";
         public string MonatsHonorarText => $"Monats Honorar: {(_jahresHonorar / 12m):C}";
 
-        // --- Checkbox Properties ---
+        // --- Checkbox Logic (Gegenseitiger Ausschluss) ---
+
         private bool _fiBu;
         public bool FiBu
         {
             get => _fiBu;
-            set { if (Set(ref _fiBu, value)) { GlobalState.Instance.Daten.HatFiBu = value; Recalculate(); } }
-        }
+            set
+            {
+                if (Set(ref _fiBu, value))
+                {
+                    _daten.HatFiBu = value;
 
-        private bool _ja;
-        public bool JA
-        {
-            get => _ja;
-            set { if (Set(ref _ja, value)) { GlobalState.Instance.Daten.HatJahresabschluss = value; Recalculate(); } }
-        }
-
-        private bool _lohn;
-        public bool Lohn
-        {
-            get => _lohn;
-            set { if (Set(ref _lohn, value)) { GlobalState.Instance.Daten.HatLohn = value; Recalculate(); } }
+                    // Wenn Fibu AN, muss Selbstbucher AUS
+                    if (value)
+                    {
+                        Selbstbucher = false;
+                    }
+                    Recalculate();
+                }
+            }
         }
 
         private bool _selbstbucher;
         public bool Selbstbucher
         {
             get => _selbstbucher;
-            set { if (Set(ref _selbstbucher, value)) { GlobalState.Instance.Daten.IstSelbstbucher = value; Recalculate(); } }
+            set
+            {
+                if (Set(ref _selbstbucher, value))
+                {
+                    _daten.IstSelbstbucher = value;
+
+                    // Wenn Selbstbucher AN, muss Fibu AUS
+                    if (value)
+                    {
+                        FiBu = false;
+                    }
+                    Recalculate();
+                }
+            }
         }
 
-        // --- Anzeige-Werte (Spalten) ---
-        // FiBu
+        private bool _ja;
+        public bool JA
+        {
+            get => _ja;
+            set { if (Set(ref _ja, value)) { _daten.HatJahresabschluss = value; Recalculate(); } }
+        }
+
+        private bool _lohn;
+        public bool Lohn
+        {
+            get => _lohn;
+            set { if (Set(ref _lohn, value)) { _daten.HatLohn = value; Recalculate(); } }
+        }
+
+        // --- Anzeige-Werte ---
         public string FiBuMonatlichFormatted { get => _fiBuMonatlichFormatted; private set => Set(ref _fiBuMonatlichFormatted, value); }
         private string _fiBuMonatlichFormatted = "0,00 €";
-
         public string FiBuJaehrlichFormatted { get => _fiBuJaehrlichFormatted; private set => Set(ref _fiBuJaehrlichFormatted, value); }
         private string _fiBuJaehrlichFormatted = "0,00 €";
 
-        // JA (Jahresabschluss)
         public string JAMonatlichFormatted { get => _jaMonatlichFormatted; private set => Set(ref _jaMonatlichFormatted, value); }
         private string _jaMonatlichFormatted = "0,00 €";
-
         public string JAJaehrlichFormatted { get => _jaJaehrlichFormatted; private set => Set(ref _jaJaehrlichFormatted, value); }
         private string _jaJaehrlichFormatted = "0,00 €";
 
-        // Lohn
         public string LohnMonatlichFormatted { get => _lohnMonatlichFormatted; private set => Set(ref _lohnMonatlichFormatted, value); }
         private string _lohnMonatlichFormatted = "0,00 €";
-
         public string LohnJaehrlichFormatted { get => _lohnJaehrlichFormatted; private set => Set(ref _lohnJaehrlichFormatted, value); }
         private string _lohnJaehrlichFormatted = "0,00 €";
 
-        // Selbstbucher (+20% auf JA)
+        // Selbstbucher Spalte
         public string SelbstbucherMonatlichFormatted { get => _selbstbucherMonatlichFormatted; private set => Set(ref _selbstbucherMonatlichFormatted, value); }
         private string _selbstbucherMonatlichFormatted = "0,00 €";
-
         public string SelbstbucherJaehrlichFormatted { get => _selbstbucherJaehrlichFormatted; private set => Set(ref _selbstbucherJaehrlichFormatted, value); }
         private string _selbstbucherJaehrlichFormatted = "0,00 €";
 
@@ -119,56 +138,49 @@ namespace HonorarRechner.Wpf.ViewModels
         public ICommand NavigateToLohnCommand { get; }
 
 
-        // --- Logik ---
+        // --- Recalculate Logic ---
         private void Recalculate()
         {
-            var daten = GlobalState.Instance.Daten;
             var werte = GlobalState.Instance.Werte;
 
-            // 1. Gesamtsumme (Footer)
+            // 1. Footer Gesamt
             var gesamt = _honorarService.BerechneAlles();
             _jahresHonorar = gesamt.JahresHonorar;
 
-            // 2. Vorschau-Werte (Spalten)
+            // 2. Einzelwerte für Spalten
 
-            // --- FiBu ---
-            decimal fibuVal = _honorarService.BerechneFibu(daten, werte);
+            // Fibu
+            decimal fibuVal = _daten.HatFiBu ? _honorarService.BerechneFibu(_daten, werte) : 0;
             FiBuMonatlichFormatted = (fibuVal / 12m).ToString("C");
             FiBuJaehrlichFormatted = fibuVal.ToString("C");
 
-            // --- JA Vorschau (FIX HIER) ---
+            // JA
             decimal jaVal = 0;
-
-            // Wir prüfen strikt den Typ, anstatt zu raten.
-            if (daten.JahresabschlussTyp == "EÜR")
+            if (_daten.HatJahresabschluss)
             {
-                jaVal = _honorarService.BerechneEuer(daten, werte);
+                if (_daten.JahresabschlussTyp == "EÜR") jaVal = _honorarService.BerechneEuer(_daten, werte);
+                else if (_daten.JahresabschlussTyp == "Bilanz") jaVal = _honorarService.BerechneBilanz(_daten, werte);
             }
-            else if (daten.JahresabschlussTyp == "Bilanz")
-            {
-                // Jetzt wird explizit die Bilanz berechnet, wenn Bilanz ausgewählt ist.
-                jaVal = _honorarService.BerechneBilanz(daten, werte);
-            }
-            // Wenn "NIX" gewählt ist, bleibt es 0.
-
             JAMonatlichFormatted = (jaVal / 12m).ToString("C");
             JAJaehrlichFormatted = jaVal.ToString("C");
 
-            // --- Lohn ---
-            decimal lohnVal = _honorarService.BerechneLohn(daten.AnzahlMitarbeiter, werte);
+            // Lohn
+            decimal lohnVal = _daten.HatLohn ? _honorarService.BerechneLohn(_daten.AnzahlMitarbeiter, werte) : 0;
             LohnMonatlichFormatted = (lohnVal / 12m).ToString("C");
             LohnJaehrlichFormatted = lohnVal.ToString("C");
 
-            // --- Selbstbucher ---
+            // Selbstbucher (20% auf JA + Lohn, wenn aktiv)
             decimal selbstbucherVal = 0;
-            if (jaVal > 0)
+            if (_daten.IstSelbstbucher)
             {
-                selbstbucherVal = jaVal * 0.20m;
+                // Hier auch für die Vorschau die gleiche Logik: (JA + Lohn) * 20%
+                decimal basis = jaVal + lohnVal;
+                selbstbucherVal = basis * 0.20m;
             }
             SelbstbucherMonatlichFormatted = (selbstbucherVal / 12m).ToString("C");
             SelbstbucherJaehrlichFormatted = selbstbucherVal.ToString("C");
 
-            // UI Refresh für Footer
+            // UI Refresh
             OnPropertyChanged(nameof(JahresHonorarText));
             OnPropertyChanged(nameof(MonatsHonorarText));
         }
