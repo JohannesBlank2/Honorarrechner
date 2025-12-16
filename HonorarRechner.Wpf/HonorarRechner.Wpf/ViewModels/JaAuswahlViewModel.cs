@@ -1,5 +1,5 @@
 ﻿using HonorarRechner.Core.Models;
-using HonorarRechner.Core.Services; // Wichtig: Damit wir rechnen können
+using HonorarRechner.Core.Services;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -19,27 +19,26 @@ namespace HonorarRechner.Wpf.ViewModels
 
         public JaAuswahlViewModel()
         {
-            // 1. Zugriff auf GlobalState und Service
             _daten = GlobalState.Instance.Daten;
             _honorarService = new HonorarService();
 
-            // 2. Den alten Zustand (Häkchen) wiederherstellen
             InitializeFromState();
 
             // Commands
             ZurueckCommand = new RelayCommand(_ => ZurueckRequested?.Invoke());
             OpenEuerCommand = new RelayCommand(_ => OpenEuerRequested?.Invoke());
             OpenBilanzCommand = new RelayCommand(_ => OpenBilanzRequested?.Invoke());
+
+            // Dummy Commands für Excel (falls Buttons noch da sind)
             OpenExcelCommand = new RelayCommand(_ => MessageBox.Show("Open Excel"));
             UpdateExcelCommand = new RelayCommand(_ => MessageBox.Show("Update Excel"));
 
-            // 3. SOFORT beim Start einmal rechnen, damit unten nicht 0 steht
             Recalculate();
         }
 
         private void InitializeFromState()
         {
-            // JA Typ wiederherstellen
+            // Initialisierung basierend auf GlobalState
             if (_daten.JahresabschlussTyp == "EÜR")
             {
                 _isEuerSelected = true;
@@ -51,7 +50,7 @@ namespace HonorarRechner.Wpf.ViewModels
                 _isEuerSelected = false;
             }
 
-            // Unternehmensart wiederherstellen
+            // Sub-Typ
             if (_daten.UnternehmensArt == "GESELLSCHAFT")
             {
                 _isGesellschaft = true;
@@ -59,30 +58,18 @@ namespace HonorarRechner.Wpf.ViewModels
             }
             else
             {
-                // Standard: Einzelunternehmen
                 _isEinzelunternehmen = true;
                 _isGesellschaft = false;
             }
         }
 
-        // --- Shell Properties (Die Anzeige unten im Fenster) ---
+        // --- Shell ---
         public string ViewTitle => "Jahresabschluss (JA)";
-
         private string _jahresHonorarText = "Jahres Honorar: 0,00 €";
-        public string JahresHonorarText
-        {
-            get => _jahresHonorarText;
-            set => SetProperty(ref _jahresHonorarText, value);
-        }
-
+        public string JahresHonorarText { get => _jahresHonorarText; set => Set(ref _jahresHonorarText, value); }
         private string _monatsHonorarText = "Monats Honorar: 0,00 €";
-        public string MonatsHonorarText
-        {
-            get => _monatsHonorarText;
-            set => SetProperty(ref _monatsHonorarText, value);
-        }
+        public string MonatsHonorarText { get => _monatsHonorarText; set => Set(ref _monatsHonorarText, value); }
 
-        // --- Commands ---
         public ICommand ZurueckCommand { get; }
         public ICommand OpenEuerCommand { get; }
         public ICommand OpenBilanzCommand { get; }
@@ -90,7 +77,7 @@ namespace HonorarRechner.Wpf.ViewModels
         public ICommand UpdateExcelCommand { get; }
         public ICommand? WeiterCommand => null;
 
-        // --- Logik & Properties ---
+        // --- Logik (BUG FIX HIER) ---
 
         private bool _isEuerSelected;
         public bool IsEuerSelected
@@ -98,20 +85,19 @@ namespace HonorarRechner.Wpf.ViewModels
             get => _isEuerSelected;
             set
             {
-                if (value == _isEuerSelected) return;
-                _isEuerSelected = value;
-                OnPropertyChanged();
+                if (Set(ref _isEuerSelected, value))
+                {
+                    if (value)
+                    {
+                        // Nur wenn AKTIViert, ändern wir Daten
+                        IsBilanzSelected = false;
+                        UpdateJaData("EÜR");
+                    }
+                    // WICHTIG: Kein 'else' hier! 
+                    // Wenn es 'false' wird (z.B. durch Navigation), löschen wir NICHT die Daten.
 
-                if (value)
-                {
-                    IsBilanzSelected = false;
-                    UpdateJaData("EÜR");
+                    Recalculate();
                 }
-                else if (!IsBilanzSelected)
-                {
-                    UpdateJaData("NIX");
-                }
-                Recalculate();
             }
         }
 
@@ -121,28 +107,29 @@ namespace HonorarRechner.Wpf.ViewModels
             get => _isBilanzSelected;
             set
             {
-                if (value == _isBilanzSelected) return;
-                _isBilanzSelected = value;
-                OnPropertyChanged();
+                if (Set(ref _isBilanzSelected, value))
+                {
+                    if (value)
+                    {
+                        IsEuerSelected = false;
+                        UpdateJaData("Bilanz");
+                    }
+                    // WICHTIG: Kein 'else' hier!
 
-                if (value)
-                {
-                    IsEuerSelected = false;
-                    UpdateJaData("Bilanz");
+                    Recalculate();
                 }
-                else if (!IsEuerSelected)
-                {
-                    UpdateJaData("NIX");
-                }
-                Recalculate();
             }
         }
 
         private void UpdateJaData(string typ)
         {
             _daten.JahresabschlussTyp = typ;
-            _daten.HatJahresabschluss = (typ != "NIX");
+            // Wir setzen HatJahresabschluss IMMER auf true, wenn hier was ausgewählt wird.
+            // Das Abwählen passiert nur in der LeistungenView (Checkbox).
+            _daten.HatJahresabschluss = true;
         }
+
+        // --- Sub-Typ ---
 
         private bool _isEinzelunternehmen = true;
         public bool IsEinzelunternehmen
@@ -150,16 +137,15 @@ namespace HonorarRechner.Wpf.ViewModels
             get => _isEinzelunternehmen;
             set
             {
-                if (value == _isEinzelunternehmen) return;
-                _isEinzelunternehmen = value;
-                OnPropertyChanged();
-
-                if (value)
+                if (Set(ref _isEinzelunternehmen, value))
                 {
-                    IsGesellschaft = false;
-                    _daten.UnternehmensArt = "EU";
+                    if (value)
+                    {
+                        IsGesellschaft = false;
+                        _daten.UnternehmensArt = "EU";
+                    }
+                    Recalculate();
                 }
-                Recalculate();
             }
         }
 
@@ -169,45 +155,36 @@ namespace HonorarRechner.Wpf.ViewModels
             get => _isGesellschaft;
             set
             {
-                if (value == _isGesellschaft) return;
-                _isGesellschaft = value;
-                OnPropertyChanged();
-
-                if (value)
+                if (Set(ref _isGesellschaft, value))
                 {
-                    IsEinzelunternehmen = false;
-                    _daten.UnternehmensArt = "GESELLSCHAFT";
+                    if (value)
+                    {
+                        IsEinzelunternehmen = false;
+                        _daten.UnternehmensArt = "GESELLSCHAFT";
+                    }
+                    else if (!IsEinzelunternehmen)
+                    {
+                        // Fallback: Einer muss an sein
+                        IsEinzelunternehmen = true;
+                    }
+                    Recalculate();
                 }
-                else if (!IsEinzelunternehmen)
-                {
-                    // Darf nicht beides aus sein -> Fallback auf EU
-                    IsEinzelunternehmen = true;
-                }
-                Recalculate();
             }
         }
 
-        // --- BERECHNUNG ---
         private void Recalculate()
         {
-            // Hier nutzen wir jetzt den zentralen Service, der ALLES zusammenrechnet
             var ergebnis = _honorarService.BerechneAlles();
-
-            // Texte updaten
             JahresHonorarText = $"Jahres Honorar: {ergebnis.JahresHonorar:C}";
             MonatsHonorarText = $"Monats Honorar: {(ergebnis.JahresHonorar / 12m):C}";
         }
 
-        // --- Helper ---
         public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string? name = null)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-
-        private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? name = null)
+        private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
         {
             if (Equals(field, value)) return false;
             field = value;
-            OnPropertyChanged(name);
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
             return true;
         }
     }
