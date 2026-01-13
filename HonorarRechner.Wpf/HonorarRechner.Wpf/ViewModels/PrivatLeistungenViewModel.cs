@@ -19,22 +19,14 @@ namespace HonorarRechner.Wpf.ViewModels
             UpdateExcelCommand = new RelayCommand(_ => MessageBox.Show("Update Excel"));
             ZurueckCommand = new RelayCommand(_ => ZurueckRequested?.Invoke());
 
+            var werte = GlobalState.Instance.Werte;
             LeistungOptionen = new ObservableCollection<PrivatLeistungOption>
             {
-                new PrivatLeistungOption("Leistung 1", 120m),
-                new PrivatLeistungOption("Leistung 2", 180m),
-                new PrivatLeistungOption("Leistung 3", 240m),
-                new PrivatLeistungOption("Leistung 4", 90m)
+                new PrivatLeistungOption("Prüfung eines Steuerbescheids", werte.PruefungSteuerbescheidPauschale)
             };
             SelectedLeistungOption = LeistungOptionen.FirstOrDefault();
 
             var privatDaten = GlobalState.Instance.PrivatDaten;
-            if (privatDaten.Leistungen.Count == 0)
-            {
-                privatDaten.Leistungen.Add(new PrivatLeistung { Name = "Leistung 1", Preis = 120m });
-                privatDaten.Leistungen.Add(new PrivatLeistung { Name = "Leistung 2", Preis = 180m });
-            }
-
             Leistungen = new ObservableCollection<PrivatLeistung>(privatDaten.Leistungen);
             Leistungen.CollectionChanged += (_, __) => UpdateTotals();
 

@@ -52,6 +52,9 @@
             OffenlegungPauschale = 110m;
             BilanzMinEuMonat = 150m;
             BilanzMinGesMonat = 250m;
+
+            // --- Private Leistungen Defaults ---
+            PruefungSteuerbescheidPauschale = 0m;
         }
 
         // --- Properties ---
@@ -102,5 +105,8 @@
         public decimal OffenlegungPauschale { get; set; }
         public decimal BilanzMinEuMonat { get; set; }
         public decimal BilanzMinGesMonat { get; set; }
+
+        // Private Leistungen
+        public decimal PruefungSteuerbescheidPauschale { get; set; }
     }
 }

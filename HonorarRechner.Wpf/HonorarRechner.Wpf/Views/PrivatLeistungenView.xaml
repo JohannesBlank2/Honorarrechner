@@ -122,8 +122,8 @@
                 <ColumnDefinition Width="2.4*"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="-222,0,54,0"
-                    VerticalAlignment="Top" Padding="20,16,20,12">
+            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="-368,0,54,0"
+                    VerticalAlignment="Top" Padding="20,16,20,12" Height="232">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -156,7 +156,7 @@
                 </Grid>
             </Border>
 
-            <Border Style="{StaticResource Card}" Grid.ColumnSpan="2" Margin="60,0,-267,18">
+            <Border Style="{StaticResource Card}" Grid.ColumnSpan="2" Margin="60,0,-371,18">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -188,7 +188,7 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Text="{Binding Name}" FontSize="16" Foreground="#003B5C" VerticalAlignment="Center"/>
-                                            <TextBlock Grid.Column="1" Text="{Binding Preis, StringFormat={}{0:C}}" FontSize="16"
+                                            <TextBlock Grid.Column="1" Text="{Binding Preis, StringFormat={}{0:0.00} €}" FontSize="16"
                                                    FontWeight="SemiBold" Foreground="#003B5C" VerticalAlignment="Center"
                                                    Margin="20,0"/>
                                             <Button Grid.Column="2" Content="X" Style="{StaticResource RemoveButton}"

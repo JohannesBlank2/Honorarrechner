@@ -95,6 +95,9 @@ namespace HonorarRechner.Core.Services
 
             w.BilanzMinEuMonat = ConvertDec(sheet.Cells[24, 7].Value);
             w.BilanzMinGesMonat = ConvertDec(sheet.Cells[25, 7].Value);
+
+            // --- Private Leistungen ---
+            w.PruefungSteuerbescheidPauschale = ConvertDec(sheet.Cells[37, 3].Value);
         }
 
         // Hilfsmethode: Sicher in Decimal wandeln (fängt Fehler ab)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Globalization;
 using System.Windows;
 using HonorarRechner.Core.Services;
 
@@ -9,6 +10,10 @@ namespace HonorarRechner.Wpf
     {
         protected override void OnStartup(StartupEventArgs e)
         {
+            var culture = CultureInfo.GetCultureInfo("de-DE");
+            CultureInfo.DefaultThreadCurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentUICulture = culture;
+
             Environment.SetEnvironmentVariable("EPPlusLicenseContext", "NonCommercial");
 
             base.OnStartup(e);
@@ -17,7 +22,7 @@ namespace HonorarRechner.Wpf
             {
                 // Pfad zur Excel auf dem Desktop
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                string excelFilePath = Path.Combine(desktopPath, "HonorarrechnerWerteTabelle.xlsx");
+                string excelFilePath = Path.Combine(desktopPath, "HonorarrechnerWerteTabelle mit Private Steuern.xlsx");
 
                 // Laden versuchen
                 var loader = new ExcelWerteService(); // Hier wird jetzt die Lizenz im Konstruktor gesetzt

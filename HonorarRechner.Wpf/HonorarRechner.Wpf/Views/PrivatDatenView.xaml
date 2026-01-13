@@ -1,4 +1,4 @@
-<UserControl x:Class="HonorarRechner.Wpf.Views.PrivatDatenView"
+﻿<UserControl x:Class="HonorarRechner.Wpf.Views.PrivatDatenView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -57,42 +57,21 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="40"/>
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Grid.Column="0" Margin="20,10">
-                <TextBlock Text="Vorname" Style="{StaticResource InputLabel}"/>
-                <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding Vorname, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Text="Summe der positiven Einkuenfte" Style="{StaticResource InputLabel}"/>
+                <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding SummePositiveEinkuenfte, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
 
             <StackPanel Grid.Row="0" Grid.Column="1" Margin="20,10">
-                <TextBlock Text="Nachname" Style="{StaticResource InputLabel}"/>
-                <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding Nachname, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Text="Werbungskosten" Style="{StaticResource InputLabel}"/>
+                <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding Werbungskosten, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
 
-            <StackPanel Grid.Row="1" Grid.Column="0" Margin="20,10">
-                <TextBlock Text="Steuer ID" Style="{StaticResource InputLabel}"/>
-                <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding SteuerId, UpdateSourceTrigger=PropertyChanged}"/>
-            </StackPanel>
-
-            <StackPanel Grid.Row="1" Grid.Column="1" Margin="20,10">
-                <TextBlock Text="Geburtsdatum" Style="{StaticResource InputLabel}"/>
-                <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding Geburtsdatum, UpdateSourceTrigger=PropertyChanged}"/>
-            </StackPanel>
-
-            <StackPanel Grid.Row="2" Grid.Column="0" Margin="20,10">
-                <TextBlock Text="Einkommen im Jahr" Style="{StaticResource InputLabel}"/>
-                <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding EinkommenImJahr, UpdateSourceTrigger=PropertyChanged}"/>
-            </StackPanel>
-
-            <StackPanel Grid.Row="2" Grid.Column="1" Margin="20,10">
-                <TextBlock Text="Anzahl Kinder" Style="{StaticResource InputLabel}"/>
-                <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding AnzahlKinder, UpdateSourceTrigger=PropertyChanged}"/>
-            </StackPanel>
-
-            <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center">
-                <CheckBox Content="Verheiratet" Style="{StaticResource BouncyCheckBox}" IsChecked="{Binding Verheiratet}"/>
+            <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="20,10" HorizontalAlignment="Center">
+                <TextBlock Text="Summe der Betriebseinnahmen" Style="{StaticResource InputLabel}"/>
+                <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding SummeBetriebseinnahmen, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
         </Grid>
     </ScrollViewer>
