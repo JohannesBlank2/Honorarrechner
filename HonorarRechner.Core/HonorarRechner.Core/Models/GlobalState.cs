@@ -12,10 +12,6 @@
         public event Action? DataChanged;
 
         public UnternehmensDaten Daten { get; set; } = new UnternehmensDaten();
-
-
-        // --- NEU ---
-        public PrivateDaten PrivateDaten { get; } = new PrivateDaten();
         public TabellenWerte Werte { get; set; } = new TabellenWerte();
 
         // Standardwerte initialisieren, damit nicht alles 0 ist, falls Excel noch nicht geladen wurde

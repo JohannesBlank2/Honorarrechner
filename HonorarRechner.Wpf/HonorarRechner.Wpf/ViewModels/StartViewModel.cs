@@ -10,22 +10,17 @@ namespace HonorarRechner.Wpf.ViewModels
     {
         public event Action<string>? MandatSelected;
 
-        // NEU:
-        public event Action? OpenPrivateRechnerRequested;
-        public ICommand OpenPrivateRechnerCommand { get; }
         public StartViewModel()
         {
             SelectMandatCommand = new RelayCommand(p => SelectMandat(p as string));
             OpenExcelCommand = new RelayCommand(_ => MessageBox.Show("Excel öffnen"));
             UpdateExcelCommand = new RelayCommand(_ => MessageBox.Show("Excel update"));
-            OpenPrivateRechnerCommand = new RelayCommand(_ => OpenPrivateRechnerRequested?.Invoke());
             JahresHonorar = 0m;
         }
 
         // --- Shell Properties ---
         public string ViewTitle => "Mandatstyp";
         public string JahresHonorarText => $"Jahres Honorar: {JahresHonorar:C}";
-        
         public string MonatsHonorarText => $"Monats Honorar: {(JahresHonorar / 12m):C}";
 
         // --- Commands ---
