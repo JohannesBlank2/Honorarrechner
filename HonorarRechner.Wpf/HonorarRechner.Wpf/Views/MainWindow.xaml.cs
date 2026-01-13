@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using HonorarRechner.Wpf.ViewModels;
 using HonorarRechner.Wpf.Views;
 
@@ -25,7 +25,8 @@ namespace HonorarRechner.Wpf
         private void OnMandatSelected(string typ)
         {
             if (typ == "Unternehmen") ShowUnternehmensView();
-            else MessageBox.Show("Privat-Mandanten-Maske kommt später 😊");
+            else if (typ == "Privat") ShowPrivatDatenView();
+            else MessageBox.Show("Mandantentyp nicht erkannt.");
         }
 
         // --- Unternehmensdaten ---
@@ -39,7 +40,27 @@ namespace HonorarRechner.Wpf
             MainContent.Content = view;
         }
 
-        // --- Leistungen Übersicht ---
+        // --- Privatdaten ---
+        private void ShowPrivatDatenView()
+        {
+            var view = new PrivatDatenView();
+            var vm = new PrivatDatenViewModel();
+            vm.ZurueckRequested += ShowStartView;
+            vm.WeiterRequested += ShowPrivatLeistungenView;
+            view.DataContext = vm;
+            MainContent.Content = view;
+        }
+
+        private void ShowPrivatLeistungenView()
+        {
+            var view = new PrivatLeistungenView();
+            var vm = new PrivatLeistungenViewModel();
+            vm.ZurueckRequested += ShowPrivatDatenView;
+            view.DataContext = vm;
+            MainContent.Content = view;
+        }
+
+        // --- Leistungen Uebersicht ---
         private void ShowLeistungenView()
         {
             var view = new LeistungenView();

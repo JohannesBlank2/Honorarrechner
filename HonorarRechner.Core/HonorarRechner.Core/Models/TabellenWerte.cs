@@ -102,12 +102,5 @@
         public decimal OffenlegungPauschale { get; set; }
         public decimal BilanzMinEuMonat { get; set; }
         public decimal BilanzMinGesMonat { get; set; }
-
-        // --- Private Leistungen Sätze (Defaults) ---
-        public decimal Priv_EstSatz { get; set; } = 3.5m; // ESt-Erklärung (3,5/10)
-        public decimal Priv_UeberschussSatz { get; set; } = 10.0m; // Überschussermittlung (10/10 bzw. 20/20)
-        public decimal Priv_BescheidSatz { get; set; } = 3.0m; // Prüfung Bescheid (Zeit oder Wert)
-        public decimal Priv_UstSatz { get; set; } = 1.0m; // USt Jahreserklärung
-        public decimal Priv_MinGegenstandswert { get; set; } = 8000m; // StBVV Minimum
     }
 }

@@ -1,31 +1,29 @@
-﻿namespace HonorarRechner.Core.Models
+namespace HonorarRechner.Core.Models
 {
     /// <summary>
-    /// Hält den aktuellen Zustand der Anwendung, damit verschiedene ViewModels darauf zugreifen können.
+    /// Holds app-wide state so multiple view models can share data.
     /// </summary>
     public class GlobalState
     {
         private static GlobalState? _instance;
         public static GlobalState Instance => _instance ??= new GlobalState();
 
-        // Das "Megafon": Andere können hier zuhören
+        // Signal for view models that data changed.
         public event Action? DataChanged;
 
         public UnternehmensDaten Daten { get; set; } = new UnternehmensDaten();
+        public PrivatDaten PrivatDaten { get; set; } = new PrivatDaten();
         public TabellenWerte Werte { get; set; } = new TabellenWerte();
 
-        // Standardwerte initialisieren, damit nicht alles 0 ist, falls Excel noch nicht geladen wurde
         private GlobalState()
         {
-            // Initialisiere mit Dummy-Werten, damit es nicht abstürzt, bevor Excel geladen ist
+            // Default values so the app does not crash before Excel loads.
             Werte.FibuNormalSatz = 0.7m; // 7/10
             Werte.ITPauschale = 40m;
             Werte.AuslagenPauschaleProzent = 0.2m;
             Werte.BeitragEins = 42m;
-            // ... weitere Defaults können hier rein
         }
 
-        // Diese Methode rufen wir auf, wenn sich was geändert hat
         public void NotifyDataChanged()
         {
             DataChanged?.Invoke();
