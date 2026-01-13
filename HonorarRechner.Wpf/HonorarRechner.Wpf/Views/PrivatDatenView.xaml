@@ -60,7 +60,7 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Grid.Column="0" Margin="20,10">
-                <TextBlock Text="Summe der positiven Einkuenfte" Style="{StaticResource InputLabel}"/>
+                <TextBlock Text="Summe der positiven Einkünfte" Style="{StaticResource InputLabel}"/>
                 <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding SummePositiveEinkuenfte, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
 

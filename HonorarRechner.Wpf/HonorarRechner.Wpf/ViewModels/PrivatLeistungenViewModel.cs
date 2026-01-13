@@ -13,7 +13,7 @@ namespace HonorarRechner.Wpf.ViewModels
     public class PrivatLeistungenViewModel : INotifyPropertyChanged
     {
         public event Action? ZurueckRequested;
-        private const string EinkommensteuerName = "Einkommensteuererklaerung ohne Ermittlung der einzelnen Einkuenfte";
+        private const string EinkommensteuerName = "Einkommensteuererklärung ohne Ermittlung der einzelnen Einkünfte";
 
         private readonly TabellenWerte _werte;
         private readonly GebuehrenRechner _rechner;
@@ -28,7 +28,7 @@ namespace HonorarRechner.Wpf.ViewModels
             _rechner = new GebuehrenRechner();
             LeistungOptionen = new ObservableCollection<PrivatLeistungOption>
             {
-                new PrivatLeistungOption("Pruefung eines Steuerbescheids", _werte.PruefungSteuerbescheidPauschale),
+                new PrivatLeistungOption("Prüfung eines Steuerbescheids", _werte.PruefungSteuerbescheidPauschale),
                 new PrivatLeistungOption(EinkommensteuerName, BerechneEinkommensteuerGebuehr())
             };
             SelectedLeistungOption = LeistungOptionen.FirstOrDefault();
