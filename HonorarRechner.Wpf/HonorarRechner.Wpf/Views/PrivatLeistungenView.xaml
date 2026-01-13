@@ -83,40 +83,52 @@
         </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,10">
-        <StackPanel MaxWidth="1100" HorizontalAlignment="Center">
-            <TextBlock Text="Private Leistungen verwalten" Style="{StaticResource SectionTitle}"/>
+    <Grid Margin="0,10" MaxWidth="1200" HorizontalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-            <Border Style="{StaticResource Card}">
+        <TextBlock Grid.Row="0" Text="Private Leistungen verwalten" Style="{StaticResource SectionTitle}"/>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.1*"/>
+                <ColumnDefinition Width="2.2*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,18,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2.5*"/>
-                        <ColumnDefinition Width="1.2*"/>
+                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Leistung auswahlen" Style="{StaticResource LabelText}"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Preis" Style="{StaticResource LabelText}"/>
+                    <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Leistung auswahlen" Style="{StaticResource LabelText}"/>
 
-                    <ComboBox Grid.Row="1" Grid.Column="0" Height="42" Margin="0,0,20,0"
+                    <ComboBox Grid.Row="1" Grid.ColumnSpan="2" Height="44" Margin="0,0,0,12"
                               ItemsSource="{Binding LeistungOptionen}"
                               DisplayMemberPath="Name"
                               SelectedItem="{Binding SelectedLeistungOption}"/>
 
-                    <TextBlock Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" FontSize="18"
-                               Foreground="#003B5C" FontWeight="SemiBold"
-                               Text="{Binding SelectedLeistungPreisText}"/>
+                    <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Preis" Style="{StaticResource LabelText}" Margin="0,0,10,0"/>
+                        <TextBlock FontSize="20" FontWeight="SemiBold" Foreground="#003B5C"
+                                   Text="{Binding SelectedLeistungPreisText}"/>
+                    </StackPanel>
 
-                    <Button Grid.Row="1" Grid.Column="2" Content="+" Style="{StaticResource AddButton}"
+                    <Button Grid.Row="2" Grid.Column="1" Content="+" Style="{StaticResource AddButton}"
                             Command="{Binding AddLeistungCommand}" />
                 </Grid>
             </Border>
 
-            <Border Style="{StaticResource Card}">
+            <Border Grid.Column="1" Style="{StaticResource Card}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -133,7 +145,8 @@
                         <TextBlock Grid.Column="1" Text="Preis" FontSize="14" Foreground="#2E5A78" Margin="20,0,0,0"/>
                     </Grid>
 
-                    <ListView Grid.Row="1" ItemsSource="{Binding Leistungen}" BorderThickness="0" Background="Transparent">
+                    <ListView Grid.Row="1" ItemsSource="{Binding Leistungen}" BorderThickness="0"
+                              Background="Transparent" MinHeight="320">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Border Background="White" CornerRadius="12" Padding="12" Margin="0,0,0,10">
@@ -157,18 +170,18 @@
                     </ListView>
                 </Grid>
             </Border>
+        </Grid>
 
-            <Border Style="{StaticResource Card}" Margin="0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="Gesamtsumme" FontSize="18" Foreground="#2E5A78" VerticalAlignment="Center"/>
-                    <TextBlock Grid.Column="1" Text="{Binding GesamtPreisText}" FontSize="24" FontWeight="Bold"
-                               Foreground="#003B5C" VerticalAlignment="Center"/>
-                </Grid>
-            </Border>
-        </StackPanel>
-    </ScrollViewer>
+        <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Gesamtsumme" FontSize="18" Foreground="#2E5A78" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="{Binding GesamtPreisText}" FontSize="24" FontWeight="Bold"
+                           Foreground="#003B5C" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
 </UserControl>
