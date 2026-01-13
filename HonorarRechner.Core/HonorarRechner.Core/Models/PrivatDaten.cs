@@ -11,6 +11,9 @@ namespace HonorarRechner.Core.Models
         public decimal EinkommenImJahr { get; set; }
         public int AnzahlKinder { get; set; }
         public bool Verheiratet { get; set; }
+        public decimal SummePositiveEinkuenfte { get; set; }
+        public decimal Werbungskosten { get; set; }
+        public decimal SummeBetriebseinnahmen { get; set; }
         public List<PrivatLeistung> Leistungen { get; set; } = new List<PrivatLeistung>();
     }
 }

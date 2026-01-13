@@ -97,6 +97,8 @@ namespace HonorarRechner.Core.Services
             w.BilanzMinGesMonat = ConvertDec(sheet.Cells[25, 7].Value);
 
             // --- Private Leistungen ---
+            w.EinkommensteuerErklaerungSatz = ParseBruch(sheet.Cells[35, 3].Value?.ToString());
+            w.EinkommensteuerErklaerungMin = ConvertDec(sheet.Cells[35, 4].Value);
             w.PruefungSteuerbescheidPauschale = ConvertDec(sheet.Cells[37, 3].Value);
         }
 

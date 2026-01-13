@@ -55,6 +55,8 @@
 
             // --- Private Leistungen Defaults ---
             PruefungSteuerbescheidPauschale = 0m;
+            EinkommensteuerErklaerungSatz = 0m;
+            EinkommensteuerErklaerungMin = 0m;
         }
 
         // --- Properties ---
@@ -108,5 +110,7 @@
 
         // Private Leistungen
         public decimal PruefungSteuerbescheidPauschale { get; set; }
+        public decimal EinkommensteuerErklaerungSatz { get; set; }
+        public decimal EinkommensteuerErklaerungMin { get; set; }
     }
 }

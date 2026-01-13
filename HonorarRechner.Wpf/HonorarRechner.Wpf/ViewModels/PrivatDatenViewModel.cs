@@ -111,6 +111,48 @@ namespace HonorarRechner.Wpf.ViewModels
             }
         }
 
+        private string _summePositiveEinkuenfte = "";
+        public string SummePositiveEinkuenfte
+        {
+            get => _summePositiveEinkuenfte;
+            set
+            {
+                if (SetField(ref _summePositiveEinkuenfte, value))
+                {
+                    GlobalState.Instance.PrivatDaten.SummePositiveEinkuenfte = ParseDecimal(value);
+                    GlobalState.Instance.NotifyDataChanged();
+                }
+            }
+        }
+
+        private string _werbungskosten = "";
+        public string Werbungskosten
+        {
+            get => _werbungskosten;
+            set
+            {
+                if (SetField(ref _werbungskosten, value))
+                {
+                    GlobalState.Instance.PrivatDaten.Werbungskosten = ParseDecimal(value);
+                    GlobalState.Instance.NotifyDataChanged();
+                }
+            }
+        }
+
+        private string _summeBetriebseinnahmen = "";
+        public string SummeBetriebseinnahmen
+        {
+            get => _summeBetriebseinnahmen;
+            set
+            {
+                if (SetField(ref _summeBetriebseinnahmen, value))
+                {
+                    GlobalState.Instance.PrivatDaten.SummeBetriebseinnahmen = ParseDecimal(value);
+                    GlobalState.Instance.NotifyDataChanged();
+                }
+            }
+        }
+
         private bool _verheiratet;
         public bool Verheiratet
         {
@@ -134,6 +176,9 @@ namespace HonorarRechner.Wpf.ViewModels
             _einkommenImJahr = d.EinkommenImJahr > 0 ? d.EinkommenImJahr.ToString("N0") : "";
             _anzahlKinder = d.AnzahlKinder > 0 ? d.AnzahlKinder.ToString() : "";
             _verheiratet = d.Verheiratet;
+            _summePositiveEinkuenfte = d.SummePositiveEinkuenfte > 0 ? d.SummePositiveEinkuenfte.ToString("N0") : "";
+            _werbungskosten = d.Werbungskosten > 0 ? d.Werbungskosten.ToString("N0") : "";
+            _summeBetriebseinnahmen = d.SummeBetriebseinnahmen > 0 ? d.SummeBetriebseinnahmen.ToString("N0") : "";
         }
 
         private decimal ParseDecimal(string input)

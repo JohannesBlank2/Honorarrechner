@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -6,12 +6,17 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 using HonorarRechner.Core.Models;
+using HonorarRechner.Core.Services;
 
 namespace HonorarRechner.Wpf.ViewModels
 {
     public class PrivatLeistungenViewModel : INotifyPropertyChanged
     {
         public event Action? ZurueckRequested;
+        private const string EinkommensteuerName = "Einkommensteuererklaerung ohne Ermittlung der einzelnen Einkuenfte";
+
+        private readonly TabellenWerte _werte;
+        private readonly GebuehrenRechner _rechner;
 
         public PrivatLeistungenViewModel()
         {
@@ -19,19 +24,24 @@ namespace HonorarRechner.Wpf.ViewModels
             UpdateExcelCommand = new RelayCommand(_ => MessageBox.Show("Update Excel"));
             ZurueckCommand = new RelayCommand(_ => ZurueckRequested?.Invoke());
 
-            var werte = GlobalState.Instance.Werte;
+            _werte = GlobalState.Instance.Werte;
+            _rechner = new GebuehrenRechner();
             LeistungOptionen = new ObservableCollection<PrivatLeistungOption>
             {
-                new PrivatLeistungOption("Prüfung eines Steuerbescheids", werte.PruefungSteuerbescheidPauschale)
+                new PrivatLeistungOption("Pruefung eines Steuerbescheids", _werte.PruefungSteuerbescheidPauschale),
+                new PrivatLeistungOption(EinkommensteuerName, BerechneEinkommensteuerGebuehr())
             };
             SelectedLeistungOption = LeistungOptionen.FirstOrDefault();
 
             var privatDaten = GlobalState.Instance.PrivatDaten;
+
             Leistungen = new ObservableCollection<PrivatLeistung>(privatDaten.Leistungen);
             Leistungen.CollectionChanged += (_, __) => UpdateTotals();
 
             AddLeistungCommand = new RelayCommand(_ => AddLeistung(), _ => SelectedLeistungOption != null);
             RemoveLeistungCommand = new RelayCommand(RemoveLeistung);
+
+            GlobalState.Instance.DataChanged += HandleGlobalDataChanged;
 
             UpdateTotals();
         }
@@ -103,6 +113,33 @@ namespace HonorarRechner.Wpf.ViewModels
             OnPropertyChanged(nameof(GesamtPreisText));
         }
 
+        private void HandleGlobalDataChanged()
+        {
+            var option = LeistungOptionen.FirstOrDefault(o => o.Name == EinkommensteuerName);
+            if (option == null) return;
+
+            option.Preis = BerechneEinkommensteuerGebuehr();
+
+            foreach (var leistung in Leistungen.Where(l => l.Name == EinkommensteuerName))
+            {
+                leistung.Preis = option.Preis;
+            }
+
+            OnPropertyChanged(nameof(SelectedLeistungPreisText));
+            UpdateTotals();
+        }
+
+        private decimal BerechneEinkommensteuerGebuehr()
+        {
+            var privat = GlobalState.Instance.PrivatDaten;
+            decimal basis = privat.SummePositiveEinkuenfte - privat.Werbungskosten + privat.SummeBetriebseinnahmen;
+            if (basis < 0m) basis = 0m;
+
+            decimal gegenstandswert = Math.Max(basis, _werte.EinkommensteuerErklaerungMin);
+            double volleGebuehr = _rechner.BerechneVolleGebuehrBeratung((double)gegenstandswert);
+            return (decimal)volleGebuehr * _werte.EinkommensteuerErklaerungSatz;
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
         protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? name = null)
         {
@@ -125,6 +162,6 @@ namespace HonorarRechner.Wpf.ViewModels
         }
 
         public string Name { get; }
-        public decimal Preis { get; }
+        public decimal Preis { get; set; }
     }
 }
