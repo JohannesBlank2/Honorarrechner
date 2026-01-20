@@ -37,8 +37,6 @@ namespace HonorarRechner.Wpf.ViewModels
                 new PrivatLeistungOption(UeberschussNichtselbstName, BerechneUeberschussNichtselbstGebuehr()),
                 new PrivatLeistungOption(UeberschussGewerbeName, BerechneUeberschussGewerbeGebuehr())
             };
-            SelectedLeistungOption = LeistungOptionen.FirstOrDefault();
-
             var privatDaten = GlobalState.Instance.PrivatDaten;
 
             Leistungen = new ObservableCollection<PrivatLeistung>(privatDaten.Leistungen);

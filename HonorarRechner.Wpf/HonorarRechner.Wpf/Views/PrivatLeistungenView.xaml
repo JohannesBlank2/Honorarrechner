@@ -27,27 +27,10 @@
             <Setter Property="Margin" Value="0,0,0,6"/>
         </Style>
 
-        <Style x:Key="InputSurface" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="BorderBrush" Value="#D6E6F2"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10,6"/>
-        </Style>
-
-        <Style x:Key="FlatComboBox" TargetType="ComboBox">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
+        <Style x:Key="PrimaryActionButton" TargetType="Button">
+            <Setter Property="Height" Value="42"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="6,2"/>
-            <Setter Property="Foreground" Value="#003B5C"/>
-        </Style>
-
-        <Style x:Key="AddButton" TargetType="Button">
-            <Setter Property="Width" Value="44"/>
-            <Setter Property="Height" Value="44"/>
-            <Setter Property="FontSize" Value="26"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Background" Value="#0077BE"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -55,7 +38,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="22">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="10">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -106,6 +89,7 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
+
     </UserControl.Resources>
 
     <Grid Margin="0,10" MaxWidth="1500" HorizontalAlignment="Center">
@@ -126,39 +110,38 @@
             <Border Grid.Column="0" Style="{StaticResource Card}" Margin="-414,0,108,0"
                     VerticalAlignment="Top" Padding="20,16,20,12" Height="232">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Leistung auswahlen" Style="{StaticResource LabelText}"/>
+                    <TextBlock Grid.Row="0" Text="Leistung hinzufuegen" Style="{StaticResource LabelText}"/>
 
-                    <Border Grid.Row="1" Grid.ColumnSpan="2" Margin="0,0,0,12" Style="{StaticResource InputSurface}">
-                        <ComboBox Height="30"
-                                  ItemsSource="{Binding LeistungOptionen}"
-                                  SelectedItem="{Binding SelectedLeistungOption}"
-                                  Style="{StaticResource FlatComboBox}">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Name}" TextWrapping="Wrap" MaxWidth="240"/>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                    </Border>
+                    <Button Grid.Row="1" Margin="0,0,0,12" Style="{StaticResource PrimaryActionButton}"
+                            Content="Leistung hinzufuegen"
+                            Click="OpenLeistungAuswahl_Click"/>
 
-                    <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="Preis" Style="{StaticResource LabelText}" Margin="0,0,10,0"/>
                         <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="#003B5C"
                                    Text="{Binding SelectedLeistungPreisText}"/>
                     </StackPanel>
 
-                    <Button Grid.Row="2" Grid.Column="1" Content="+" Style="{StaticResource AddButton}"
-                            Command="{Binding AddLeistungCommand}" />
+                    <Border Grid.Row="3" Margin="0,16,0,0"
+                            Background="White" CornerRadius="12"
+                            BorderBrush="#D6E6F2" BorderThickness="1" Padding="14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Gesamtsumme" FontSize="14" Foreground="#2E5A78" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="{Binding GesamtPreisText}" FontSize="18" FontWeight="Bold"
+                                       Foreground="#003B5C" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
                 </Grid>
             </Border>
 
@@ -191,7 +174,9 @@
                               PreviewMouseWheel="LeistungenList_PreviewMouseWheel">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="White" CornerRadius="12" Padding="12">
+                                    <Border Background="White" CornerRadius="12" Padding="12"
+                                            BorderBrush="#D6E6F2" BorderThickness="1"
+                                            Margin="0,0,0,8">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
@@ -217,16 +202,5 @@
             </Border>
         </Grid>
 
-        <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="Gesamtsumme" FontSize="16" Foreground="#2E5A78" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="1" Text="{Binding GesamtPreisText}" FontSize="22" FontWeight="Bold"
-                           Foreground="#003B5C" VerticalAlignment="Center"/>
-            </Grid>
-        </Border>
     </Grid>
 </UserControl>

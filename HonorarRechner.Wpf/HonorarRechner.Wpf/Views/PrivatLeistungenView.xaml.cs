@@ -1,5 +1,7 @@
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using HonorarRechner.Wpf.ViewModels;
 
 namespace HonorarRechner.Wpf.Views
 {
@@ -20,6 +22,32 @@ namespace HonorarRechner.Wpf.Views
             var newOffset = LeistungenScrollViewer.VerticalOffset - e.Delta;
             LeistungenScrollViewer.ScrollToVerticalOffset(newOffset);
             e.Handled = true;
+        }
+
+        private void OpenLeistungAuswahl_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not PrivatLeistungenViewModel vm)
+            {
+                return;
+            }
+
+            var dialog = new PrivatLeistungAuswahlWindow(vm.LeistungOptionen, vm.SelectedLeistungOption);
+            dialog.Owner = Window.GetWindow(this);
+            if (dialog.Owner != null)
+            {
+                dialog.Width = dialog.Owner.ActualWidth;
+                dialog.Height = dialog.Owner.ActualHeight;
+            }
+
+            var result = dialog.ShowDialog();
+            if (result == true && dialog.SelectedOption != null)
+            {
+                vm.SelectedLeistungOption = dialog.SelectedOption;
+                if (vm.AddLeistungCommand.CanExecute(null))
+                {
+                    vm.AddLeistungCommand.Execute(null);
+                }
+            }
         }
     }
 }
