@@ -179,11 +179,16 @@
                         <TextBlock Grid.Column="1" Text="Preis" FontSize="13" Foreground="#2E5A78" Margin="20,0,0,0"/>
                     </Grid>
 
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled" CanContentScroll="True">
+                    <ScrollViewer x:Name="LeistungenScrollViewer" Grid.Row="1"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  CanContentScroll="False">
                         <ListView ItemsSource="{Binding Leistungen}" BorderThickness="0"
-                                  Background="Transparent" MinHeight="320"
-                                  ItemContainerStyle="{StaticResource LeistungItemContainer}">
+                              Background="Transparent" MinHeight="320"
+                              ItemContainerStyle="{StaticResource LeistungItemContainer}"
+                              ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              PreviewMouseWheel="LeistungenList_PreviewMouseWheel">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <Border Background="White" CornerRadius="12" Padding="12">
@@ -206,7 +211,7 @@
                                     </Border>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
-                        </ListView>
+                    </ListView>
                     </ScrollViewer>
                 </Grid>
             </Border>
