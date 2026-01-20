@@ -69,9 +69,14 @@
                 <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding Werbungskosten, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
 
-            <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="20,10" HorizontalAlignment="Center">
+            <StackPanel Grid.Row="1" Grid.Column="0" Margin="20,10">
                 <TextBlock Text="Summe der Betriebseinnahmen" Style="{StaticResource InputLabel}"/>
                 <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding SummeBetriebseinnahmen, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Grid.Column="1" Margin="20,10">
+                <TextBlock Text="Summe der Betriebsausgaben" Style="{StaticResource InputLabel}"/>
+                <TextBox Style="{StaticResource ModernTextBox}" Text="{Binding SummeBetriebsausgaben, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
         </Grid>
     </ScrollViewer>

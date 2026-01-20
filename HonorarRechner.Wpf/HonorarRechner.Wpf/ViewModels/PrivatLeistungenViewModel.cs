@@ -14,6 +14,10 @@ namespace HonorarRechner.Wpf.ViewModels
     {
         public event Action? ZurueckRequested;
         private const string EinkommensteuerName = "Einkommensteuererklärung ohne Ermittlung der einzelnen Einkünfte";
+        private const string UeberschussGewerbeName =
+            "Ermittlung des Ueberschusses der Betriebseinnahmen ueber die -ausgaben aus Gewerbebetrieb Paragraf 25 StBVV 2022";
+        private const string UeberschussNichtselbstName =
+            "Ermittlung des Ueberschusses der Einnahmen ueber die Werbungsk. aus nichtselbst. Arbeit § 27 Abs. 1 StBVV 2022";
 
         private readonly TabellenWerte _werte;
         private readonly GebuehrenRechner _rechner;
@@ -29,7 +33,9 @@ namespace HonorarRechner.Wpf.ViewModels
             LeistungOptionen = new ObservableCollection<PrivatLeistungOption>
             {
                 new PrivatLeistungOption("Prüfung eines Steuerbescheids", _werte.PruefungSteuerbescheidPauschale),
-                new PrivatLeistungOption(EinkommensteuerName, BerechneEinkommensteuerGebuehr())
+                new PrivatLeistungOption(EinkommensteuerName, BerechneEinkommensteuerGebuehr()),
+                new PrivatLeistungOption(UeberschussNichtselbstName, BerechneUeberschussNichtselbstGebuehr()),
+                new PrivatLeistungOption(UeberschussGewerbeName, BerechneUeberschussGewerbeGebuehr())
             };
             SelectedLeistungOption = LeistungOptionen.FirstOrDefault();
 
@@ -115,29 +121,58 @@ namespace HonorarRechner.Wpf.ViewModels
 
         private void HandleGlobalDataChanged()
         {
-            var option = LeistungOptionen.FirstOrDefault(o => o.Name == EinkommensteuerName);
-            if (option == null) return;
-
-            option.Preis = BerechneEinkommensteuerGebuehr();
-
-            foreach (var leistung in Leistungen.Where(l => l.Name == EinkommensteuerName))
-            {
-                leistung.Preis = option.Preis;
-            }
+            UpdateLeistungPreis(EinkommensteuerName, BerechneEinkommensteuerGebuehr());
+            UpdateLeistungPreis(UeberschussNichtselbstName, BerechneUeberschussNichtselbstGebuehr());
+            UpdateLeistungPreis(UeberschussGewerbeName, BerechneUeberschussGewerbeGebuehr());
 
             OnPropertyChanged(nameof(SelectedLeistungPreisText));
             UpdateTotals();
         }
 
+        private void UpdateLeistungPreis(string name, decimal preis)
+        {
+            var option = LeistungOptionen.FirstOrDefault(o => o.Name == name);
+            if (option == null) return;
+
+            option.Preis = preis;
+
+            foreach (var leistung in Leistungen.Where(l => l.Name == name))
+            {
+                leistung.Preis = option.Preis;
+            }
+        }
+
         private decimal BerechneEinkommensteuerGebuehr()
         {
             var privat = GlobalState.Instance.PrivatDaten;
-            decimal basis = privat.SummePositiveEinkuenfte - privat.Werbungskosten + privat.SummeBetriebseinnahmen;
+            decimal basis = privat.SummePositiveEinkuenfte;
             if (basis < 0m) basis = 0m;
 
             decimal gegenstandswert = Math.Max(basis, _werte.EinkommensteuerErklaerungMin);
             double volleGebuehr = _rechner.BerechneVolleGebuehrBeratung((double)gegenstandswert);
             return (decimal)volleGebuehr * _werte.EinkommensteuerErklaerungSatz;
+        }
+
+        private decimal BerechneUeberschussNichtselbstGebuehr()
+        {
+            var privat = GlobalState.Instance.PrivatDaten;
+            decimal basis = privat.Werbungskosten;
+            if (basis < 0m) basis = 0m;
+
+            decimal gegenstandswert = Math.Max(basis, _werte.UeberschussNichtselbstMin);
+            double volleGebuehr = _rechner.BerechneVolleGebuehrBeratung((double)gegenstandswert);
+            return (decimal)volleGebuehr * _werte.UeberschussNichtselbstSatz;
+        }
+
+        private decimal BerechneUeberschussGewerbeGebuehr()
+        {
+            var privat = GlobalState.Instance.PrivatDaten;
+            decimal basis = Math.Max(privat.SummeBetriebseinnahmen, privat.SummeBetriebsausgaben);
+            if (basis < 0m) basis = 0m;
+
+            decimal gegenstandswert = Math.Max(basis, 17500m);
+            double volleGebuehr = _rechner.BerechneVolleGebuehrBeratung((double)gegenstandswert);
+            return (decimal)volleGebuehr * _werte.UeberschussGewerbeSatz;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

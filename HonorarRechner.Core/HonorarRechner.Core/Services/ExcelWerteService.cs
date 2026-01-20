@@ -99,7 +99,11 @@ namespace HonorarRechner.Core.Services
             // --- Private Leistungen ---
             w.EinkommensteuerErklaerungSatz = ParseBruch(sheet.Cells[35, 3].Value?.ToString());
             w.EinkommensteuerErklaerungMin = ConvertDec(sheet.Cells[35, 4].Value);
+            w.UeberschussNichtselbstSatz = ParseBruch(sheet.Cells[36, 3].Value?.ToString());
+            w.UeberschussNichtselbstMin = ConvertDec(sheet.Cells[36, 4].Value);
             w.PruefungSteuerbescheidPauschale = ConvertDec(sheet.Cells[37, 3].Value);
+            w.UeberschussGewerbeSatz = ParseBruch(sheet.Cells[38, 3].Value?.ToString());
+            w.UeberschussGewerbeMin = ConvertDec(sheet.Cells[38, 4].Value);
         }
 
         // Hilfsmethode: Sicher in Decimal wandeln (fängt Fehler ab)

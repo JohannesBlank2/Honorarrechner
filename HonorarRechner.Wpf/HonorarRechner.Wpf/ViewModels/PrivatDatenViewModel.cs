@@ -153,6 +153,20 @@ namespace HonorarRechner.Wpf.ViewModels
             }
         }
 
+        private string _summeBetriebsausgaben = "";
+        public string SummeBetriebsausgaben
+        {
+            get => _summeBetriebsausgaben;
+            set
+            {
+                if (SetField(ref _summeBetriebsausgaben, value))
+                {
+                    GlobalState.Instance.PrivatDaten.SummeBetriebsausgaben = ParseDecimal(value);
+                    GlobalState.Instance.NotifyDataChanged();
+                }
+            }
+        }
+
         private bool _verheiratet;
         public bool Verheiratet
         {
@@ -179,6 +193,7 @@ namespace HonorarRechner.Wpf.ViewModels
             _summePositiveEinkuenfte = d.SummePositiveEinkuenfte > 0 ? d.SummePositiveEinkuenfte.ToString("N0") : "";
             _werbungskosten = d.Werbungskosten > 0 ? d.Werbungskosten.ToString("N0") : "";
             _summeBetriebseinnahmen = d.SummeBetriebseinnahmen > 0 ? d.SummeBetriebseinnahmen.ToString("N0") : "";
+            _summeBetriebsausgaben = d.SummeBetriebsausgaben > 0 ? d.SummeBetriebsausgaben.ToString("N0") : "";
         }
 
         private decimal ParseDecimal(string input)

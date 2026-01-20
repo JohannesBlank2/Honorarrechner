@@ -14,6 +14,7 @@ namespace HonorarRechner.Core.Models
         public decimal SummePositiveEinkuenfte { get; set; }
         public decimal Werbungskosten { get; set; }
         public decimal SummeBetriebseinnahmen { get; set; }
+        public decimal SummeBetriebsausgaben { get; set; }
         public List<PrivatLeistung> Leistungen { get; set; } = new List<PrivatLeistung>();
     }
 }

@@ -57,6 +57,10 @@
             PruefungSteuerbescheidPauschale = 0m;
             EinkommensteuerErklaerungSatz = 0m;
             EinkommensteuerErklaerungMin = 0m;
+            UeberschussNichtselbstSatz = 0m;
+            UeberschussNichtselbstMin = 0m;
+            UeberschussGewerbeSatz = 0m;
+            UeberschussGewerbeMin = 0m;
         }
 
         // --- Properties ---
@@ -112,5 +116,9 @@
         public decimal PruefungSteuerbescheidPauschale { get; set; }
         public decimal EinkommensteuerErklaerungSatz { get; set; }
         public decimal EinkommensteuerErklaerungMin { get; set; }
+        public decimal UeberschussNichtselbstSatz { get; set; }
+        public decimal UeberschussNichtselbstMin { get; set; }
+        public decimal UeberschussGewerbeSatz { get; set; }
+        public decimal UeberschussGewerbeMin { get; set; }
     }
 }
