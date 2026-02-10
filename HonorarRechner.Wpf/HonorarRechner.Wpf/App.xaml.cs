@@ -20,8 +20,8 @@ namespace HonorarRechner.Wpf
 
             try
             {
-                // Pfad zur Excel auf dem Desktop
-                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                // Pfad zur Excel auf G:\
+                string excelRootPath = @"G:\Honorar_Rechner";
 
                 string[] dateiKandidaten =
                 {
@@ -31,7 +31,7 @@ namespace HonorarRechner.Wpf
                 string excelFilePath = "Honorar_Rechner_Werte.xlsx";
                 foreach (var dateiName in dateiKandidaten)
                 {
-                    var kandidat = Path.Combine(desktopPath, dateiName);
+                    var kandidat = Path.Combine(excelRootPath, dateiName);
                     if (!File.Exists(kandidat))
                     {
                         continue;
@@ -43,7 +43,7 @@ namespace HonorarRechner.Wpf
 
                 if (string.IsNullOrWhiteSpace(excelFilePath))
                 {
-                    excelFilePath = Path.Combine(desktopPath, dateiKandidaten[0]);
+                    excelFilePath = Path.Combine(excelRootPath, dateiKandidaten[0]);
                 }
 
                 // Laden versuchen
