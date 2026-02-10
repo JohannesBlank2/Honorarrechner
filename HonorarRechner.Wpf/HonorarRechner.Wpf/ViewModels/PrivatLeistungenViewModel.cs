@@ -18,7 +18,7 @@ namespace HonorarRechner.Wpf.ViewModels
         private const string EinkommensteuerName = "Einkommensteuererklärung";
         private const string UeberschussKapitalvermoegenName = "EÜE Kapitalvermögen";
         private const string UeberschussNichtselbstName = "EÜE Nichtselbst. Arbeit";
-        private const string UeberschussGewerbeName = "EÜB Gewerbebetrieb";
+        private const string UeberschussGewerbeName = "EÜB Gewerbebetrieb Selbstst.";
         private const string UeberschussSonstigeName = "EÜE Sonstige Einkünfte";
         private const string UeberschussVermietungName = "EÜE Vermiet./Verpacht.";
         private const string UstErklaerungConsultingName = "USt-Erklärung Consulting";

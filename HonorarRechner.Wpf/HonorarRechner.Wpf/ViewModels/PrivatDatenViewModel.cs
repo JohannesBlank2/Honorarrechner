@@ -23,6 +23,9 @@ namespace HonorarRechner.Wpf.ViewModels
             UpdateExcelCommand = new RelayCommand(_ => MessageBox.Show("Update Excel"));
             ZurueckCommand = new RelayCommand(_ => ZurueckRequested?.Invoke());
             WeiterCommand = new RelayCommand(_ => WeiterRequested?.Invoke());
+
+            GlobalState.Instance.DataChanged += UpdateTotals;
+            UpdateTotals();
         }
 
         public string ViewTitle => "Privatdaten";
@@ -37,6 +40,21 @@ namespace HonorarRechner.Wpf.ViewModels
         public ObservableCollection<PrivatLeistungEingabeRow> EingabeZeilen { get; } = new();
 
         private decimal _jahresHonorar = 0m;
+
+        private string _globalEinnahmen = "";
+        public string GlobalEinnahmen
+        {
+            get => _globalEinnahmen;
+            set
+            {
+                if (SetField(ref _globalEinnahmen, value))
+                {
+                    if (string.IsNullOrWhiteSpace(value)) return;
+                    var parsed = ParseDecimal(value);
+                    ApplyGlobalEinnahmen(parsed);
+                }
+            }
+        }
 
         private string _vorname = "";
         public string Vorname
@@ -361,6 +379,15 @@ namespace HonorarRechner.Wpf.ViewModels
 
             UpdateLeistungVisibility();
             BuildEingabeZeilen();
+            UpdateTotals();
+        }
+
+        private void UpdateTotals()
+        {
+            var leistungen = GlobalState.Instance.PrivatDaten.Leistungen;
+            _jahresHonorar = leistungen.Sum(l => l.Preis);
+            OnPropertyChanged(nameof(JahresHonorarText));
+            OnPropertyChanged(nameof(MonatsHonorarText));
         }
 
         private bool _showEinkommensteuer;
@@ -444,6 +471,14 @@ namespace HonorarRechner.Wpf.ViewModels
 
                 ApplyDefaultsIfMissing(leistung, art, defaultsUsed);
                 EingabeZeilen.Add(new PrivatLeistungEingabeRow(leistung, art, index));
+            }
+        }
+
+        private void ApplyGlobalEinnahmen(decimal value)
+        {
+            foreach (var row in EingabeZeilen)
+            {
+                row.ApplyGlobalEinnahmen(value);
             }
         }
 
@@ -592,6 +627,8 @@ namespace HonorarRechner.Wpf.ViewModels
         public string Nummerierung => $"{_index})";
         public int Index => _index - 1;
         public bool HasWert2 => _art == LeistungArt.Gewerbe || _art == LeistungArt.UstConsulting;
+        public string Wert1Hint => GetWert1Hint();
+        public string Wert2Hint => GetWert2Hint();
 
         public string Wert1
         {
@@ -600,8 +637,7 @@ namespace HonorarRechner.Wpf.ViewModels
             {
                 if (SetField(ref _wert1, value))
                 {
-                    _leistung.EingabeWert1 = ParseDecimalInput(value);
-                    SyncGlobalWerte();
+                    SetWert1Internal(ParseDecimalInput(value), true);
                 }
             }
         }
@@ -657,6 +693,22 @@ namespace HonorarRechner.Wpf.ViewModels
             GlobalState.Instance.NotifyDataChanged();
         }
 
+        public void ApplyGlobalEinnahmen(decimal value)
+        {
+            SetWert1Internal(value, true);
+        }
+
+        private void SetWert1Internal(decimal value, bool syncGlobal)
+        {
+            _leistung.EingabeWert1 = value;
+            _wert1 = value > 0m ? value.ToString("N0") : "";
+            OnPropertyChanged(nameof(Wert1));
+            if (syncGlobal)
+            {
+                SyncGlobalWerte();
+            }
+        }
+
         private static decimal ParseDecimalInput(string input)
         {
             if (string.IsNullOrWhiteSpace(input)) return 0m;
@@ -667,16 +719,26 @@ namespace HonorarRechner.Wpf.ViewModels
 
         private string BuildLeistungLabel()
         {
+            return _leistung.Name;
+        }
+
+        private string GetWert1Hint()
+        {
             return _art switch
             {
-                LeistungArt.Einkommensteuer => $"{_leistung.Name} (Summe positive Einkuenfte)",
-                LeistungArt.Kapitalvermoegen => $"{_leistung.Name} (Einnahmen)",
-                LeistungArt.Nichtselbst => $"{_leistung.Name} (Einnahmen)",
-                LeistungArt.Sonstige => $"{_leistung.Name} (Einnahmen)",
-                LeistungArt.Vermietung => $"{_leistung.Name} (Einnahmen)",
-                LeistungArt.Gewerbe => $"{_leistung.Name} (Betriebseinnahmen / Betriebsausgaben)",
-                LeistungArt.UstConsulting => $"{_leistung.Name} (Gesamtbetrag Entgelte / Entgelte Leistungsempfaenger)",
-                _ => _leistung.Name
+                LeistungArt.Gewerbe => "Betriebseinnahmen",
+                LeistungArt.UstConsulting => "Gesamtbetrag Entgelte",
+                _ => "Einnahmen"
+            };
+        }
+
+        private string GetWert2Hint()
+        {
+            return _art switch
+            {
+                LeistungArt.Gewerbe => "Betriebsausgaben",
+                LeistungArt.UstConsulting => "Entgelte Leistungsempfaenger",
+                _ => ""
             };
         }
 

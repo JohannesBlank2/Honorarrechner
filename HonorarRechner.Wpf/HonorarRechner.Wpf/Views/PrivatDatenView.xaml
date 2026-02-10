@@ -29,13 +29,29 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}">
-                            <ScrollViewer x:Name="PART_ContentHost" Margin="4,0"/>
+                            <Grid>
+                                <ScrollViewer x:Name="PART_ContentHost" Margin="4,0"/>
+                                <TextBlock x:Name="Watermark"
+                                           Margin="10,0,0,0"
+                                           Foreground="#96AFC5"
+                                           VerticalAlignment="Center"
+                                           IsHitTestVisible="False"
+                                           Text="{TemplateBinding Tag}"
+                                           Visibility="Collapsed"/>
+                            </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsKeyboardFocused" Value="True">
                                 <Setter Property="Background" Value="#FFFFFF"/>
                                 <Setter TargetName="border" Property="BorderBrush" Value="#80FFFFFF"/>
                             </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="Text" Value=""/>
+                                    <Condition Property="IsKeyboardFocused" Value="False"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Watermark" Property="Visibility" Value="Visible"/>
+                            </MultiTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -63,40 +79,41 @@
     <Grid Margin="0,8" MaxWidth="1120" HorizontalAlignment="Center">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-
-        <TextBlock Grid.Row="0"
-                   Margin="8,0,8,12"
-                   Text="Bitte nur die bekannten Rohwerte eingeben. Die Gegenstandswerte werden automatisch berechnet."
-                   Foreground="#D7EAF8"
-                   FontSize="14"
-                   FontWeight="SemiBold"/>
 
         <Border Grid.Row="1"
                 Background="#1AFFFFFF"
                 CornerRadius="14"
                 BorderBrush="#33FFFFFF"
                 BorderThickness="1"
-                Padding="14">
+                Padding="14"
+                VerticalAlignment="Stretch">
             <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,10">
+                    <TextBlock Text="Einnahmen (global)" Style="{StaticResource ColumnHeaderText}" Margin="0,0,12,0"/>
+                    <TextBox Style="{StaticResource CompactTextBox}"
+                             Width="220"
+                             Tag="Einnahmen"
+                             Text="{Binding GlobalEinnahmen, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <Grid Grid.Row="1">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2.4*"/>
                         <ColumnDefinition Width="1*"/>
                         <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="Bereich / Berechnungsbasis" Style="{StaticResource ColumnHeaderText}"/>
-                    <TextBlock Grid.Column="1" Text="Wert 1" Style="{StaticResource ColumnHeaderText}" HorizontalAlignment="Center"/>
-                    <TextBlock Grid.Column="2" Text="Wert 2" Style="{StaticResource ColumnHeaderText}" HorizontalAlignment="Center"/>
                 </Grid>
 
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <ItemsControl ItemsSource="{Binding EingabeZeilen}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -121,11 +138,13 @@
 
                                         <TextBox Grid.Column="1" Margin="0,3,0,3"
                                                  Style="{StaticResource CompactTextBox}"
+                                                 Tag="{Binding Wert1Hint}"
                                                  Text="{Binding Wert1, UpdateSourceTrigger=PropertyChanged}"/>
 
                                         <Grid Grid.Column="2">
                                             <TextBox Margin="0,3,0,3"
                                                      Style="{StaticResource CompactTextBox}"
+                                                     Tag="{Binding Wert2Hint}"
                                                      Visibility="{Binding HasWert2, Converter={StaticResource BoolToVisibility}}"
                                                      Text="{Binding Wert2, UpdateSourceTrigger=PropertyChanged}"/>
                                             <TextBlock Text="-"
