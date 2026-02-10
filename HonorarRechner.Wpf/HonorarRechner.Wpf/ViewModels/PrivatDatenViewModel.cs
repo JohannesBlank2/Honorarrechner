@@ -32,7 +32,7 @@ namespace HonorarRechner.Wpf.ViewModels
         public ICommand ZurueckCommand { get; }
         public ICommand WeiterCommand { get; }
 
-        private decimal _jahresHonorar;
+        private decimal _jahresHonorar = 0m;
 
         private string _vorname = "";
         public string Vorname
