@@ -40,12 +40,15 @@ namespace HonorarRechner.Wpf.Views
             }
 
             var result = dialog.ShowDialog();
-            if (result == true && dialog.SelectedOption != null)
+            if (result == true && dialog.SelectedOptions.Count > 0)
             {
-                vm.SelectedLeistungOption = dialog.SelectedOption;
-                if (vm.AddLeistungCommand.CanExecute(null))
+                foreach (var option in dialog.SelectedOptions)
                 {
-                    vm.AddLeistungCommand.Execute(null);
+                    vm.SelectedLeistungOption = option;
+                    if (vm.AddLeistungCommand.CanExecute(null))
+                    {
+                        vm.AddLeistungCommand.Execute(null);
+                    }
                 }
             }
         }

@@ -1,8 +1,10 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Controls;
 using HonorarRechner.Wpf.ViewModels;
 
 namespace HonorarRechner.Wpf.Views
@@ -12,6 +14,7 @@ namespace HonorarRechner.Wpf.Views
         public ObservableCollection<PrivatLeistungOption> Optionen { get; }
         private readonly ICollectionView _optionenView;
         public PrivatLeistungOption? SelectedOption { get; set; }
+        public ObservableCollection<PrivatLeistungOption> SelectedOptions { get; } = new();
 
         public PrivatLeistungAuswahlWindow(ObservableCollection<PrivatLeistungOption> optionen,
             PrivatLeistungOption? selectedOption)
@@ -26,9 +29,15 @@ namespace HonorarRechner.Wpf.Views
 
         private void Add_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectedOption == null)
+            if (OptionenList.SelectedItems.Count == 0)
             {
                 return;
+            }
+
+            SelectedOptions.Clear();
+            foreach (var item in OptionenList.SelectedItems.OfType<PrivatLeistungOption>())
+            {
+                SelectedOptions.Add(item);
             }
 
             DialogResult = true;
@@ -41,12 +50,35 @@ namespace HonorarRechner.Wpf.Views
 
         private void OptionenList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (SelectedOption == null)
+            if (OptionenList.SelectedItems.Count == 0)
             {
                 return;
             }
 
-            DialogResult = true;
+            Add_Click(sender, e);
+        }
+
+        private void OptionenList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (OptionenList.SelectedItems.Count == 1)
+            {
+                SelectedOption = OptionenList.SelectedItems[0] as PrivatLeistungOption;
+            }
+            else if (OptionenList.SelectedItems.Count == 0)
+            {
+                SelectedOption = null;
+            }
+        }
+
+        private void OptionenListItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not ListViewItem item)
+            {
+                return;
+            }
+
+            item.IsSelected = !item.IsSelected;
+            e.Handled = true;
         }
 
         private void SucheTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)

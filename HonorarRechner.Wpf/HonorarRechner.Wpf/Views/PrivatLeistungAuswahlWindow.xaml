@@ -160,12 +160,13 @@
 
                 <ListView x:Name="OptionenList" Grid.Row="1" Margin="0,16,0,16"
                           ItemsSource="{Binding Optionen}"
-                          SelectedItem="{Binding SelectedOption}"
+                          SelectionMode="Extended"
                           Background="Transparent"
                           BorderThickness="0"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                          MouseDoubleClick="OptionenList_MouseDoubleClick">
+                          MouseDoubleClick="OptionenList_MouseDoubleClick"
+                          SelectionChanged="OptionenList_SelectionChanged">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -173,6 +174,7 @@
                             <Setter Property="Margin" Value="0,0,0,10"/>
                             <Setter Property="Background" Value="Transparent"/>
                             <Setter Property="BorderThickness" Value="0"/>
+                            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="OptionenListItem_PreviewMouseLeftButtonDown"/>
                         </Style>
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
@@ -211,11 +213,11 @@
                 <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="Abbrechen" Style="{StaticResource DialogButton}"
                             Click="Cancel_Click" IsCancel="True" Margin="0,0,10,0"/>
-                    <Button Content="Hinzufuegen" Click="Add_Click" IsDefault="True">
+                    <Button x:Name="AddButton" Content="Hinzufuegen" Click="Add_Click" IsDefault="True">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource DialogAccentButton}">
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SelectedItem, ElementName=OptionenList}" Value="{x:Null}">
+                                    <DataTrigger Binding="{Binding SelectedItems.Count, ElementName=OptionenList}" Value="0">
                                         <Setter Property="IsEnabled" Value="False"/>
                                     </DataTrigger>
                                 </Style.Triggers>
