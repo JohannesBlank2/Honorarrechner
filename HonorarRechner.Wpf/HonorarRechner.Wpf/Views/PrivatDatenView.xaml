@@ -3,12 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:conv="clr-namespace:HonorarRechner.Wpf.Converters"
              mc:Ignorable="d"
              d:DesignHeight="620"
              d:DesignWidth="1100">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+        <conv:IndexToPastelBrushConverter x:Key="IndexToPastelBrush"/>
 
         <Style x:Key="CompactTextBox" TargetType="TextBox">
             <Setter Property="Width" Value="240"/>
@@ -78,111 +80,76 @@
                 BorderThickness="1"
                 Padding="14">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2.4*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="Bereich / Berechnungsbasis" Style="{StaticResource ColumnHeaderText}"/>
-                <TextBlock Grid.Row="0" Grid.Column="1" Text="Wert 1" Style="{StaticResource ColumnHeaderText}" HorizontalAlignment="Center"/>
-                <TextBlock Grid.Row="0" Grid.Column="2" Text="Wert 2" Style="{StaticResource ColumnHeaderText}" HorizontalAlignment="Center"/>
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2.4*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Bereich / Berechnungsbasis" Style="{StaticResource ColumnHeaderText}"/>
+                    <TextBlock Grid.Column="1" Text="Wert 1" Style="{StaticResource ColumnHeaderText}" HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Column="2" Text="Wert 2" Style="{StaticResource ColumnHeaderText}" HorizontalAlignment="Center"/>
+                </Grid>
 
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="Einkommensteuer (Summe positive Einkuenfte)"
-                           Style="{StaticResource RowLabel}"
-                           Visibility="{Binding ShowEinkommensteuer, Converter={StaticResource BoolToVisibility}}"/>
-                <TextBox Grid.Row="1" Grid.Column="1" Margin="0,3,0,3"
-                         Style="{StaticResource CompactTextBox}"
-                         Visibility="{Binding ShowEinkommensteuer, Converter={StaticResource BoolToVisibility}}"
-                         Text="{Binding SummePositiveEinkuenfte, UpdateSourceTrigger=PropertyChanged}"/>
-                <TextBlock Grid.Row="1" Grid.Column="2"
-                           Text="-"
-                           Foreground="#B9D3E6"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           Visibility="{Binding ShowEinkommensteuer, Converter={StaticResource BoolToVisibility}}"/>
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding EingabeZeilen}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding Index, Converter={StaticResource IndexToPastelBrush}}"
+                                        CornerRadius="10" Padding="8" Margin="0,0,0,8"
+                                        BorderBrush="#D6E6F2" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="2.4*"/>
+                                            <ColumnDefinition Width="1*"/>
+                                            <ColumnDefinition Width="1*"/>
+                                        </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="Kapitalvermoegen (Einnahmen / Werbungskosten)"
-                           Style="{StaticResource RowLabel}"
-                           Visibility="{Binding ShowKapitalvermoegen, Converter={StaticResource BoolToVisibility}}"/>
-                <TextBox Grid.Row="2" Grid.Column="1" Margin="0,3,0,3"
-                         Style="{StaticResource CompactTextBox}"
-                         Visibility="{Binding ShowKapitalvermoegen, Converter={StaticResource BoolToVisibility}}"
-                         Text="{Binding KapitalvermoegenEinnahmen, UpdateSourceTrigger=PropertyChanged}"/>
-                <TextBox Grid.Row="2" Grid.Column="2" Margin="0,3,0,3"
-                         Style="{StaticResource CompactTextBox}"
-                         Visibility="{Binding ShowKapitalvermoegen, Converter={StaticResource BoolToVisibility}}"
-                         Text="{Binding KapitalvermoegenWerbungskosten, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Border Background="#FFFFFF" CornerRadius="8" BorderBrush="#D6E6F2"
+                                                    BorderThickness="1" Padding="6,2" Margin="0,0,8,0">
+                                                <TextBlock Text="{Binding Nummerierung}" FontSize="12" FontWeight="SemiBold" Foreground="#2E5A78"/>
+                                            </Border>
+                                            <TextBlock Text="{Binding LeistungName}" FontSize="13" FontWeight="SemiBold"
+                                                       Foreground="#2E5A78" TextWrapping="Wrap" Margin="0"/>
+                                        </StackPanel>
 
-                <TextBlock Grid.Row="3" Grid.Column="0" Text="Nichtselbstaendige Arbeit (Einnahmen / Werbungskosten)"
-                           Style="{StaticResource RowLabel}"
-                           Visibility="{Binding ShowNichtselbst, Converter={StaticResource BoolToVisibility}}"/>
-                <TextBox Grid.Row="3" Grid.Column="1" Margin="0,3,0,3"
-                         Style="{StaticResource CompactTextBox}"
-                         Visibility="{Binding ShowNichtselbst, Converter={StaticResource BoolToVisibility}}"
-                         Text="{Binding NichtselbstEinnahmen, UpdateSourceTrigger=PropertyChanged}"/>
-                <TextBox Grid.Row="3" Grid.Column="2" Margin="0,3,0,3"
-                         Style="{StaticResource CompactTextBox}"
-                         Visibility="{Binding ShowNichtselbst, Converter={StaticResource BoolToVisibility}}"
-                         Text="{Binding NichtselbstWerbungskosten, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <TextBox Grid.Column="1" Margin="0,3,0,3"
+                                                 Style="{StaticResource CompactTextBox}"
+                                                 Text="{Binding Wert1, UpdateSourceTrigger=PropertyChanged}"/>
 
-                <TextBlock Grid.Row="4" Grid.Column="0" Text="Sonstige Einkuenfte (Einnahmen / Werbungskosten)"
-                           Style="{StaticResource RowLabel}"
-                           Visibility="{Binding ShowSonstige, Converter={StaticResource BoolToVisibility}}"/>
-                <TextBox Grid.Row="4" Grid.Column="1" Margin="0,3,0,3"
-                         Style="{StaticResource CompactTextBox}"
-                         Visibility="{Binding ShowSonstige, Converter={StaticResource BoolToVisibility}}"
-                         Text="{Binding SonstigeEinnahmen, UpdateSourceTrigger=PropertyChanged}"/>
-                <TextBox Grid.Row="4" Grid.Column="2" Margin="0,3,0,3"
-                         Style="{StaticResource CompactTextBox}"
-                         Visibility="{Binding ShowSonstige, Converter={StaticResource BoolToVisibility}}"
-                         Text="{Binding SonstigeWerbungskosten, UpdateSourceTrigger=PropertyChanged}"/>
-
-                <TextBlock Grid.Row="5" Grid.Column="0" Text="Vermietung/Verpachtung (Einnahmen / Werbungskosten)"
-                           Style="{StaticResource RowLabel}"
-                           Visibility="{Binding ShowVermietung, Converter={StaticResource BoolToVisibility}}"/>
-                <TextBox Grid.Row="5" Grid.Column="1" Margin="0,3,0,3"
-                         Style="{StaticResource CompactTextBox}"
-                         Visibility="{Binding ShowVermietung, Converter={StaticResource BoolToVisibility}}"
-                         Text="{Binding VermietungEinnahmen, UpdateSourceTrigger=PropertyChanged}"/>
-                <TextBox Grid.Row="5" Grid.Column="2" Margin="0,3,0,3"
-                         Style="{StaticResource CompactTextBox}"
-                         Visibility="{Binding ShowVermietung, Converter={StaticResource BoolToVisibility}}"
-                         Text="{Binding VermietungWerbungskosten, UpdateSourceTrigger=PropertyChanged}"/>
-
-                <TextBlock Grid.Row="6" Grid.Column="0" Text="Gewerbebetrieb (Betriebseinnahmen / Betriebsausgaben)"
-                           Style="{StaticResource RowLabel}"
-                           Visibility="{Binding ShowGewerbe, Converter={StaticResource BoolToVisibility}}"/>
-                <TextBox Grid.Row="6" Grid.Column="1" Margin="0,3,0,3"
-                         Style="{StaticResource CompactTextBox}"
-                         Visibility="{Binding ShowGewerbe, Converter={StaticResource BoolToVisibility}}"
-                         Text="{Binding SummeBetriebseinnahmen, UpdateSourceTrigger=PropertyChanged}"/>
-                <TextBox Grid.Row="6" Grid.Column="2" Margin="0,3,0,3"
-                         Style="{StaticResource CompactTextBox}"
-                         Visibility="{Binding ShowGewerbe, Converter={StaticResource BoolToVisibility}}"
-                         Text="{Binding SummeBetriebsausgaben, UpdateSourceTrigger=PropertyChanged}"/>
-
-                <TextBlock Grid.Row="7" Grid.Column="0" Text="USt Consulting (Gesamtbetrag Entgelte / Entgelte Leistungsempfaenger)"
-                           Style="{StaticResource RowLabel}"
-                           Visibility="{Binding ShowUstConsulting, Converter={StaticResource BoolToVisibility}}"/>
-                <TextBox Grid.Row="7" Grid.Column="1" Margin="0,3,0,3"
-                         Style="{StaticResource CompactTextBox}"
-                         Visibility="{Binding ShowUstConsulting, Converter={StaticResource BoolToVisibility}}"
-                         Text="{Binding UstConsultingGesamtbetragEntgelte, UpdateSourceTrigger=PropertyChanged}"/>
-                <TextBox Grid.Row="7" Grid.Column="2" Margin="0,3,0,3"
-                         Style="{StaticResource CompactTextBox}"
-                         Visibility="{Binding ShowUstConsulting, Converter={StaticResource BoolToVisibility}}"
-                         Text="{Binding UstConsultingEntgelteLeistungsempfaenger, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <Grid Grid.Column="2">
+                                            <TextBox Margin="0,3,0,3"
+                                                     Style="{StaticResource CompactTextBox}"
+                                                     Visibility="{Binding HasWert2, Converter={StaticResource BoolToVisibility}}"
+                                                     Text="{Binding Wert2, UpdateSourceTrigger=PropertyChanged}"/>
+                                            <TextBlock Text="-"
+                                                       Foreground="#B9D3E6"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding HasWert2}" Value="False">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </Grid>
         </Border>
     </Grid>

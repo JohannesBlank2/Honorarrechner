@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -31,6 +33,8 @@ namespace HonorarRechner.Wpf.ViewModels
         public ICommand UpdateExcelCommand { get; }
         public ICommand ZurueckCommand { get; }
         public ICommand WeiterCommand { get; }
+
+        public ObservableCollection<PrivatLeistungEingabeRow> EingabeZeilen { get; } = new();
 
         private decimal _jahresHonorar = 0m;
 
@@ -356,6 +360,7 @@ namespace HonorarRechner.Wpf.ViewModels
             _ustConsultingEntgelteLeistungsempfaenger = d.UstConsultingEntgelteLeistungsempfaenger > 0 ? d.UstConsultingEntgelteLeistungsempfaenger.ToString("N0") : "";
 
             UpdateLeistungVisibility();
+            BuildEingabeZeilen();
         }
 
         private bool _showEinkommensteuer;
@@ -420,6 +425,112 @@ namespace HonorarRechner.Wpf.ViewModels
             ShowUstConsulting = leistungen.Any(n => n.Contains("USt", StringComparison.OrdinalIgnoreCase));
         }
 
+        private void BuildEingabeZeilen()
+        {
+            EingabeZeilen.Clear();
+
+            var defaultsUsed = new HashSet<LeistungArt>();
+            var leistungen = GlobalState.Instance.PrivatDaten.Leistungen;
+            int index = 0;
+
+            foreach (var leistung in leistungen)
+            {
+                index++;
+                var art = GetLeistungArt(leistung.Name);
+                if (art == LeistungArt.None)
+                {
+                    continue;
+                }
+
+                ApplyDefaultsIfMissing(leistung, art, defaultsUsed);
+                EingabeZeilen.Add(new PrivatLeistungEingabeRow(leistung, art, index));
+            }
+        }
+
+        private void ApplyDefaultsIfMissing(PrivatLeistung leistung, LeistungArt art, HashSet<LeistungArt> defaultsUsed)
+        {
+            if (defaultsUsed.Contains(art))
+            {
+                return;
+            }
+
+            if (leistung.EingabeWert1 != 0m || leistung.EingabeWert2 != 0m)
+            {
+                defaultsUsed.Add(art);
+                return;
+            }
+
+            var d = GlobalState.Instance.PrivatDaten;
+            switch (art)
+            {
+                case LeistungArt.Einkommensteuer:
+                    leistung.EingabeWert1 = d.SummePositiveEinkuenfte;
+                    break;
+                case LeistungArt.Kapitalvermoegen:
+                    leistung.EingabeWert1 = d.KapitalvermoegenEinnahmen;
+                    break;
+                case LeistungArt.Nichtselbst:
+                    leistung.EingabeWert1 = d.NichtselbstEinnahmen;
+                    break;
+                case LeistungArt.Sonstige:
+                    leistung.EingabeWert1 = d.SonstigeEinnahmen;
+                    break;
+                case LeistungArt.Vermietung:
+                    leistung.EingabeWert1 = d.VermietungEinnahmen;
+                    break;
+                case LeistungArt.Gewerbe:
+                    leistung.EingabeWert1 = d.SummeBetriebseinnahmen;
+                    leistung.EingabeWert2 = d.SummeBetriebsausgaben;
+                    break;
+                case LeistungArt.UstConsulting:
+                    leistung.EingabeWert1 = d.UstConsultingGesamtbetragEntgelte;
+                    leistung.EingabeWert2 = d.UstConsultingEntgelteLeistungsempfaenger;
+                    break;
+            }
+
+            defaultsUsed.Add(art);
+        }
+
+        private static LeistungArt GetLeistungArt(string name)
+        {
+            if (name.StartsWith("Einkommensteuer", StringComparison.OrdinalIgnoreCase))
+            {
+                return LeistungArt.Einkommensteuer;
+            }
+
+            if (name.Contains("Kapitalverm", StringComparison.OrdinalIgnoreCase))
+            {
+                return LeistungArt.Kapitalvermoegen;
+            }
+
+            if (name.Contains("nichtselbst", StringComparison.OrdinalIgnoreCase))
+            {
+                return LeistungArt.Nichtselbst;
+            }
+
+            if (name.Contains("sonst", StringComparison.OrdinalIgnoreCase))
+            {
+                return LeistungArt.Sonstige;
+            }
+
+            if (name.Contains("Vermiet", StringComparison.OrdinalIgnoreCase))
+            {
+                return LeistungArt.Vermietung;
+            }
+
+            if (name.Contains("Gewerbe", StringComparison.OrdinalIgnoreCase))
+            {
+                return LeistungArt.Gewerbe;
+            }
+
+            if (name.Contains("USt", StringComparison.OrdinalIgnoreCase))
+            {
+                return LeistungArt.UstConsulting;
+            }
+
+            return LeistungArt.None;
+        }
+
         private decimal ParseDecimal(string input)
         {
             if (string.IsNullOrWhiteSpace(input)) return 0m;
@@ -433,6 +544,140 @@ namespace HonorarRechner.Wpf.ViewModels
             if (string.IsNullOrWhiteSpace(input)) return 0;
             if (int.TryParse(input.Trim(), out int res)) return res;
             return 0;
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? name = null)
+        {
+            if (Equals(field, value)) return false;
+            field = value;
+            OnPropertyChanged(name);
+            return true;
+        }
+        protected void OnPropertyChanged([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+
+    public enum LeistungArt
+    {
+        None,
+        Einkommensteuer,
+        Kapitalvermoegen,
+        Nichtselbst,
+        Sonstige,
+        Vermietung,
+        Gewerbe,
+        UstConsulting
+    }
+
+    public class PrivatLeistungEingabeRow : INotifyPropertyChanged
+    {
+        private readonly PrivatLeistung _leistung;
+        private readonly LeistungArt _art;
+        private readonly int _index;
+
+        private string _wert1;
+        private string _wert2;
+
+        public PrivatLeistungEingabeRow(PrivatLeistung leistung, LeistungArt art, int index)
+        {
+            _leistung = leistung;
+            _art = art;
+            _index = index;
+
+            _wert1 = leistung.EingabeWert1 > 0m ? leistung.EingabeWert1.ToString("N0") : "";
+            _wert2 = leistung.EingabeWert2 > 0m ? leistung.EingabeWert2.ToString("N0") : "";
+        }
+
+        public string LeistungName => BuildLeistungLabel();
+        public string Nummerierung => $"{_index})";
+        public int Index => _index - 1;
+        public bool HasWert2 => _art == LeistungArt.Gewerbe || _art == LeistungArt.UstConsulting;
+
+        public string Wert1
+        {
+            get => _wert1;
+            set
+            {
+                if (SetField(ref _wert1, value))
+                {
+                    _leistung.EingabeWert1 = ParseDecimalInput(value);
+                    SyncGlobalWerte();
+                }
+            }
+        }
+
+        public string Wert2
+        {
+            get => _wert2;
+            set
+            {
+                if (SetField(ref _wert2, value))
+                {
+                    _leistung.EingabeWert2 = ParseDecimalInput(value);
+                    SyncGlobalWerte();
+                }
+            }
+        }
+
+        private void SyncGlobalWerte()
+        {
+            var d = GlobalState.Instance.PrivatDaten;
+            switch (_art)
+            {
+                case LeistungArt.Einkommensteuer:
+                    d.SummePositiveEinkuenfte = _leistung.EingabeWert1;
+                    break;
+                case LeistungArt.Kapitalvermoegen:
+                    d.KapitalvermoegenEinnahmen = _leistung.EingabeWert1;
+                    d.KapitalvermoegenWerbungskosten = 0m;
+                    break;
+                case LeistungArt.Nichtselbst:
+                    d.NichtselbstEinnahmen = _leistung.EingabeWert1;
+                    d.NichtselbstWerbungskosten = 0m;
+                    d.Werbungskosten = 0m;
+                    break;
+                case LeistungArt.Sonstige:
+                    d.SonstigeEinnahmen = _leistung.EingabeWert1;
+                    d.SonstigeWerbungskosten = 0m;
+                    break;
+                case LeistungArt.Vermietung:
+                    d.VermietungEinnahmen = _leistung.EingabeWert1;
+                    d.VermietungWerbungskosten = 0m;
+                    break;
+                case LeistungArt.Gewerbe:
+                    d.SummeBetriebseinnahmen = _leistung.EingabeWert1;
+                    d.SummeBetriebsausgaben = _leistung.EingabeWert2;
+                    break;
+                case LeistungArt.UstConsulting:
+                    d.UstConsultingGesamtbetragEntgelte = _leistung.EingabeWert1;
+                    d.UstConsultingEntgelteLeistungsempfaenger = _leistung.EingabeWert2;
+                    break;
+            }
+
+            GlobalState.Instance.NotifyDataChanged();
+        }
+
+        private static decimal ParseDecimalInput(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return 0m;
+            string clean = input.Replace(".", "").Replace(",", "").Trim();
+            if (decimal.TryParse(clean, out decimal res)) return res;
+            return 0m;
+        }
+
+        private string BuildLeistungLabel()
+        {
+            return _art switch
+            {
+                LeistungArt.Einkommensteuer => $"{_leistung.Name} (Summe positive Einkuenfte)",
+                LeistungArt.Kapitalvermoegen => $"{_leistung.Name} (Einnahmen)",
+                LeistungArt.Nichtselbst => $"{_leistung.Name} (Einnahmen)",
+                LeistungArt.Sonstige => $"{_leistung.Name} (Einnahmen)",
+                LeistungArt.Vermietung => $"{_leistung.Name} (Einnahmen)",
+                LeistungArt.Gewerbe => $"{_leistung.Name} (Betriebseinnahmen / Betriebsausgaben)",
+                LeistungArt.UstConsulting => $"{_leistung.Name} (Gesamtbetrag Entgelte / Entgelte Leistungsempfaenger)",
+                _ => _leistung.Name
+            };
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
