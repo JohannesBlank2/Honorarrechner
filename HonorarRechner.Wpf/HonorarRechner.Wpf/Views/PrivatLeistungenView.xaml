@@ -7,6 +7,8 @@
              ">
 
     <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+
         <Style x:Key="Card" TargetType="Border">
             <Setter Property="Background" Value="#F7FBFF"/>
             <Setter Property="CornerRadius" Value="18"/>
@@ -108,9 +110,10 @@
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0" Style="{StaticResource Card}" Margin="-414,0,108,0"
-                    VerticalAlignment="Top" Padding="20,16,20,12" Height="232">
+                    VerticalAlignment="Top" Padding="20,16,20,12" Height="286">
                 <Grid>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -142,6 +145,12 @@
                                        Foreground="#003B5C" VerticalAlignment="Center"/>
                         </Grid>
                     </Border>
+
+                    <Button Grid.Row="4" Margin="0,14,0,0"
+                            Style="{StaticResource PrimaryActionButton}"
+                            Content="Werte eingeben"
+                            Command="{Binding WerteEingebenCommand}"
+                            Visibility="{Binding HasEingabeLeistungen, Converter={StaticResource BoolToVisibility}}"/>
                 </Grid>
             </Border>
 

@@ -22,7 +22,29 @@ namespace HonorarRechner.Wpf
             {
                 // Pfad zur Excel auf dem Desktop
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                string excelFilePath = Path.Combine(desktopPath, "HonorarrechnerWerteTabelle mit Private Steuern2.xlsx");
+
+                string[] dateiKandidaten =
+                {
+                    "Honorar_Rechner_Werte.xlsx",
+                };
+
+                string excelFilePath = "Honorar_Rechner_Werte.xlsx";
+                foreach (var dateiName in dateiKandidaten)
+                {
+                    var kandidat = Path.Combine(desktopPath, dateiName);
+                    if (!File.Exists(kandidat))
+                    {
+                        continue;
+                    }
+
+                    excelFilePath = kandidat;
+                    break;
+                }
+
+                if (string.IsNullOrWhiteSpace(excelFilePath))
+                {
+                    excelFilePath = Path.Combine(desktopPath, dateiKandidaten[0]);
+                }
 
                 // Laden versuchen
                 var loader = new ExcelWerteService(); // Hier wird jetzt die Lizenz im Konstruktor gesetzt

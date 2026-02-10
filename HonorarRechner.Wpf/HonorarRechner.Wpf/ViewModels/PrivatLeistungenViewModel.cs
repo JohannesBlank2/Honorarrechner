@@ -13,11 +13,16 @@ namespace HonorarRechner.Wpf.ViewModels
     public class PrivatLeistungenViewModel : INotifyPropertyChanged
     {
         public event Action? ZurueckRequested;
-        private const string EinkommensteuerName = "Einkommensteuererklärung ohne Ermittlung der einzelnen Einkünfte";
-        private const string UeberschussGewerbeName =
-            "Ermittlung des Ueberschusses der Betriebseinnahmen ueber die -ausgaben aus Gewerbebetrieb Paragraf 25 StBVV 2022";
-        private const string UeberschussNichtselbstName =
-            "Ermittlung des Ueberschusses der Einnahmen ueber die Werbungsk. aus nichtselbst. Arbeit § 27 Abs. 1 StBVV 2022";
+        public event Action? WerteEingebenRequested;
+
+        private const string EinkommensteuerName = "Einkommensteuererklärung";
+        private const string UeberschussKapitalvermoegenName = "EÜE Kapitalvermögen";
+        private const string UeberschussNichtselbstName = "EÜE Nichtselbst. Arbeit";
+        private const string UeberschussGewerbeName = "EÜB Gewerbebetrieb";
+        private const string UeberschussSonstigeName = "EÜE Sonstige Einkünfte";
+        private const string UeberschussVermietungName = "EÜE Vermiet./Verpacht.";
+        private const string UstErklaerungConsultingName = "USt-Erklärung Consulting";
+        private const string PruefungSteuerbescheidName = "Prüfung eines Steuerbescheids";
 
         private readonly TabellenWerte _werte;
         private readonly GebuehrenRechner _rechner;
@@ -32,15 +37,26 @@ namespace HonorarRechner.Wpf.ViewModels
             _rechner = new GebuehrenRechner();
             LeistungOptionen = new ObservableCollection<PrivatLeistungOption>
             {
-                new PrivatLeistungOption("Prüfung eines Steuerbescheids", _werte.PruefungSteuerbescheidPauschale),
                 new PrivatLeistungOption(EinkommensteuerName, BerechneEinkommensteuerGebuehr()),
+                new PrivatLeistungOption(UeberschussKapitalvermoegenName, BerechneUeberschussKapitalvermoegenGebuehr()),
                 new PrivatLeistungOption(UeberschussNichtselbstName, BerechneUeberschussNichtselbstGebuehr()),
-                new PrivatLeistungOption(UeberschussGewerbeName, BerechneUeberschussGewerbeGebuehr())
+                new PrivatLeistungOption(UeberschussGewerbeName, BerechneUeberschussGewerbeGebuehr()),
+                new PrivatLeistungOption(UeberschussSonstigeName, BerechneUeberschussSonstigeGebuehr()),
+                new PrivatLeistungOption(UeberschussVermietungName, BerechneUeberschussVermietungGebuehr()),
+                new PrivatLeistungOption(UstErklaerungConsultingName, BerechneUstConsultingGebuehr()),
+                new PrivatLeistungOption(PruefungSteuerbescheidName, _werte.PruefungSteuerbescheidPauschale)
             };
             var privatDaten = GlobalState.Instance.PrivatDaten;
 
             Leistungen = new ObservableCollection<PrivatLeistung>(privatDaten.Leistungen);
-            Leistungen.CollectionChanged += (_, __) => UpdateTotals();
+            UpdateEingabeStatus();
+            WerteEingebenCommand = new RelayCommand(_ => WerteEingebenRequested?.Invoke(), _ => HasEingabeLeistungen);
+            Leistungen.CollectionChanged += (_, __) =>
+            {
+                UpdateTotals();
+                UpdateEingabeStatus();
+                CommandManager.InvalidateRequerySuggested();
+            };
 
             AddLeistungCommand = new RelayCommand(_ => AddLeistung(), _ => SelectedLeistungOption != null);
             RemoveLeistungCommand = new RelayCommand(RemoveLeistung);
@@ -58,9 +74,17 @@ namespace HonorarRechner.Wpf.ViewModels
         public ICommand OpenExcelCommand { get; }
         public ICommand UpdateExcelCommand { get; }
         public ICommand ZurueckCommand { get; }
-        public ICommand? WeiterCommand => null;
+        public ICommand? WeiterCommand => WerteEingebenCommand;
         public ICommand AddLeistungCommand { get; }
         public ICommand RemoveLeistungCommand { get; }
+        public ICommand WerteEingebenCommand { get; }
+
+        private bool _hasEingabeLeistungen;
+        public bool HasEingabeLeistungen
+        {
+            get => _hasEingabeLeistungen;
+            private set => SetField(ref _hasEingabeLeistungen, value);
+        }
 
         public ObservableCollection<PrivatLeistungOption> LeistungOptionen { get; }
 
@@ -117,11 +141,22 @@ namespace HonorarRechner.Wpf.ViewModels
             OnPropertyChanged(nameof(GesamtPreisText));
         }
 
+        private void UpdateEingabeStatus()
+        {
+            HasEingabeLeistungen = Leistungen.Any(l =>
+                !string.Equals(l.Name, PruefungSteuerbescheidName, StringComparison.OrdinalIgnoreCase));
+        }
+
         private void HandleGlobalDataChanged()
         {
             UpdateLeistungPreis(EinkommensteuerName, BerechneEinkommensteuerGebuehr());
+            UpdateLeistungPreis(UeberschussKapitalvermoegenName, BerechneUeberschussKapitalvermoegenGebuehr());
             UpdateLeistungPreis(UeberschussNichtselbstName, BerechneUeberschussNichtselbstGebuehr());
             UpdateLeistungPreis(UeberschussGewerbeName, BerechneUeberschussGewerbeGebuehr());
+            UpdateLeistungPreis(UeberschussSonstigeName, BerechneUeberschussSonstigeGebuehr());
+            UpdateLeistungPreis(UeberschussVermietungName, BerechneUeberschussVermietungGebuehr());
+            UpdateLeistungPreis(UstErklaerungConsultingName, BerechneUstConsultingGebuehr());
+            UpdateLeistungPreis(PruefungSteuerbescheidName, _werte.PruefungSteuerbescheidPauschale);
 
             OnPropertyChanged(nameof(SelectedLeistungPreisText));
             UpdateTotals();
@@ -143,35 +178,71 @@ namespace HonorarRechner.Wpf.ViewModels
         private decimal BerechneEinkommensteuerGebuehr()
         {
             var privat = GlobalState.Instance.PrivatDaten;
-            decimal basis = privat.SummePositiveEinkuenfte;
-            if (basis < 0m) basis = 0m;
+            return BerechneBeratungsLeistung(privat.SummePositiveEinkuenfte, _werte.EinkommensteuerErklaerungMin,
+                _werte.EinkommensteuerErklaerungSatz);
+        }
 
-            decimal gegenstandswert = Math.Max(basis, _werte.EinkommensteuerErklaerungMin);
-            double volleGebuehr = _rechner.BerechneVolleGebuehrBeratung((double)gegenstandswert);
-            return (decimal)volleGebuehr * _werte.EinkommensteuerErklaerungSatz;
+        private decimal BerechneUeberschussKapitalvermoegenGebuehr()
+        {
+            var privat = GlobalState.Instance.PrivatDaten;
+            decimal basis = Max0(Math.Max(privat.KapitalvermoegenEinnahmen, privat.KapitalvermoegenWerbungskosten));
+            return BerechneBeratungsLeistung(basis, _werte.UeberschussKapitalvermoegenMin,
+                _werte.UeberschussKapitalvermoegenSatz);
         }
 
         private decimal BerechneUeberschussNichtselbstGebuehr()
         {
             var privat = GlobalState.Instance.PrivatDaten;
-            decimal basis = privat.Werbungskosten;
-            if (basis < 0m) basis = 0m;
 
-            decimal gegenstandswert = Math.Max(basis, _werte.UeberschussNichtselbstMin);
-            double volleGebuehr = _rechner.BerechneVolleGebuehrBeratung((double)gegenstandswert);
-            return (decimal)volleGebuehr * _werte.UeberschussNichtselbstSatz;
+            decimal nichtselbstWerbungskosten = privat.NichtselbstWerbungskosten;
+            if (nichtselbstWerbungskosten <= 0m && privat.Werbungskosten > 0m)
+            {
+                nichtselbstWerbungskosten = privat.Werbungskosten;
+            }
+
+            decimal basis = Max0(Math.Max(privat.NichtselbstEinnahmen, nichtselbstWerbungskosten));
+            return BerechneBeratungsLeistung(basis, _werte.UeberschussNichtselbstMin, _werte.UeberschussNichtselbstSatz);
         }
 
         private decimal BerechneUeberschussGewerbeGebuehr()
         {
             var privat = GlobalState.Instance.PrivatDaten;
-            decimal basis = Math.Max(privat.SummeBetriebseinnahmen, privat.SummeBetriebsausgaben);
-            if (basis < 0m) basis = 0m;
-
-            decimal gegenstandswert = Math.Max(basis, 17500m);
-            double volleGebuehr = _rechner.BerechneVolleGebuehrBeratung((double)gegenstandswert);
+            decimal basis = Max0(Math.Max(privat.SummeBetriebseinnahmen, privat.SummeBetriebsausgaben));
+            decimal gegenstandswert = Math.Max(Max0(basis), Max0(_werte.UeberschussGewerbeMin));
+            double volleGebuehr = _rechner.BerechneVolleGebuehrAbschluss((double)gegenstandswert);
             return (decimal)volleGebuehr * _werte.UeberschussGewerbeSatz;
         }
+
+        private decimal BerechneUeberschussSonstigeGebuehr()
+        {
+            var privat = GlobalState.Instance.PrivatDaten;
+            decimal basis = Max0(Math.Max(privat.SonstigeEinnahmen, privat.SonstigeWerbungskosten));
+            return BerechneBeratungsLeistung(basis, _werte.UeberschussSonstigeMin, _werte.UeberschussSonstigeSatz);
+        }
+
+        private decimal BerechneUeberschussVermietungGebuehr()
+        {
+            var privat = GlobalState.Instance.PrivatDaten;
+            decimal basis = Max0(Math.Max(privat.VermietungEinnahmen, privat.VermietungWerbungskosten));
+            return BerechneBeratungsLeistung(basis, _werte.UeberschussVermietungMin, _werte.UeberschussVermietungSatz);
+        }
+
+        private decimal BerechneUstConsultingGebuehr()
+        {
+            var privat = GlobalState.Instance.PrivatDaten;
+            decimal basis =
+                Max0((privat.UstConsultingGesamtbetragEntgelte + privat.UstConsultingEntgelteLeistungsempfaenger) * 0.1m);
+            return BerechneBeratungsLeistung(basis, _werte.UstErklaerungConsultingMin, _werte.UstErklaerungConsultingSatz);
+        }
+
+        private decimal BerechneBeratungsLeistung(decimal basis, decimal minBetrag, decimal satz)
+        {
+            decimal gegenstandswert = Math.Max(Max0(basis), Max0(minBetrag));
+            double volleGebuehr = _rechner.BerechneVolleGebuehrBeratung((double)gegenstandswert);
+            return (decimal)volleGebuehr * satz;
+        }
+
+        private static decimal Max0(decimal wert) => wert < 0m ? 0m : wert;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? name = null)

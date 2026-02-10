@@ -99,11 +99,26 @@ namespace HonorarRechner.Core.Services
             // --- Private Leistungen ---
             w.EinkommensteuerErklaerungSatz = ParseBruch(sheet.Cells[35, 3].Value?.ToString());
             w.EinkommensteuerErklaerungMin = ConvertDec(sheet.Cells[35, 4].Value);
-            w.UeberschussNichtselbstSatz = ParseBruch(sheet.Cells[36, 3].Value?.ToString());
-            w.UeberschussNichtselbstMin = ConvertDec(sheet.Cells[36, 4].Value);
-            w.PruefungSteuerbescheidPauschale = ConvertDec(sheet.Cells[37, 3].Value);
+
+            w.UeberschussKapitalvermoegenSatz = ParseBruch(sheet.Cells[36, 3].Value?.ToString());
+            w.UeberschussKapitalvermoegenMin = ConvertDec(sheet.Cells[36, 4].Value);
+
+            w.UeberschussNichtselbstSatz = ParseBruch(sheet.Cells[37, 3].Value?.ToString());
+            w.UeberschussNichtselbstMin = ConvertDec(sheet.Cells[37, 4].Value);
+
             w.UeberschussGewerbeSatz = ParseBruch(sheet.Cells[38, 3].Value?.ToString());
             w.UeberschussGewerbeMin = ConvertDec(sheet.Cells[38, 4].Value);
+
+            w.UeberschussSonstigeSatz = ParseBruch(sheet.Cells[39, 3].Value?.ToString());
+            w.UeberschussSonstigeMin = ConvertDec(sheet.Cells[39, 4].Value);
+
+            w.UeberschussVermietungSatz = ParseBruch(sheet.Cells[40, 3].Value?.ToString());
+            w.UeberschussVermietungMin = ConvertDec(sheet.Cells[40, 4].Value);
+
+            w.UstErklaerungConsultingSatz = ParseBruch(sheet.Cells[41, 3].Value?.ToString());
+            w.UstErklaerungConsultingMin = ConvertDec(sheet.Cells[41, 4].Value);
+
+            w.PruefungSteuerbescheidPauschale = ConvertDec(sheet.Cells[42, 3].Value);
         }
 
         // Hilfsmethode: Sicher in Decimal wandeln (fängt Fehler ab)

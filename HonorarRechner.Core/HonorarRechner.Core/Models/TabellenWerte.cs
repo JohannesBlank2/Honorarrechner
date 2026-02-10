@@ -54,13 +54,21 @@
             BilanzMinGesMonat = 250m;
 
             // --- Private Leistungen Defaults ---
-            PruefungSteuerbescheidPauschale = 0m;
-            EinkommensteuerErklaerungSatz = 0m;
-            EinkommensteuerErklaerungMin = 0m;
-            UeberschussNichtselbstSatz = 0m;
-            UeberschussNichtselbstMin = 0m;
-            UeberschussGewerbeSatz = 0m;
-            UeberschussGewerbeMin = 0m;
+            PruefungSteuerbescheidPauschale = 30m;
+            EinkommensteuerErklaerungSatz = 0.1m;      // 1/10
+            EinkommensteuerErklaerungMin = 8000m;
+            UeberschussKapitalvermoegenSatz = 0.05m;   // 1/20
+            UeberschussKapitalvermoegenMin = 8000m;
+            UeberschussNichtselbstSatz = 0.1m;         // 2/20
+            UeberschussNichtselbstMin = 8000m;
+            UeberschussGewerbeSatz = 1.5m;             // 15/10
+            UeberschussGewerbeMin = 17500m;
+            UeberschussSonstigeSatz = 0.05m;           // 1/20
+            UeberschussSonstigeMin = 8000m;
+            UeberschussVermietungSatz = 0.3m;          // 6/20
+            UeberschussVermietungMin = 8000m;
+            UstErklaerungConsultingSatz = 0.2m;        // 2/10
+            UstErklaerungConsultingMin = 8000m;
         }
 
         // --- Properties ---
@@ -116,9 +124,17 @@
         public decimal PruefungSteuerbescheidPauschale { get; set; }
         public decimal EinkommensteuerErklaerungSatz { get; set; }
         public decimal EinkommensteuerErklaerungMin { get; set; }
+        public decimal UeberschussKapitalvermoegenSatz { get; set; }
+        public decimal UeberschussKapitalvermoegenMin { get; set; }
         public decimal UeberschussNichtselbstSatz { get; set; }
         public decimal UeberschussNichtselbstMin { get; set; }
         public decimal UeberschussGewerbeSatz { get; set; }
         public decimal UeberschussGewerbeMin { get; set; }
+        public decimal UeberschussSonstigeSatz { get; set; }
+        public decimal UeberschussSonstigeMin { get; set; }
+        public decimal UeberschussVermietungSatz { get; set; }
+        public decimal UeberschussVermietungMin { get; set; }
+        public decimal UstErklaerungConsultingSatz { get; set; }
+        public decimal UstErklaerungConsultingMin { get; set; }
     }
 }

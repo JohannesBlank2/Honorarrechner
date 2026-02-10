@@ -25,7 +25,7 @@ namespace HonorarRechner.Wpf
         private void OnMandatSelected(string typ)
         {
             if (typ == "Unternehmen") ShowUnternehmensView();
-            else if (typ == "Privat") ShowPrivatDatenView();
+            else if (typ == "Privat") ShowPrivatLeistungenView();
             else MessageBox.Show("Mandantentyp nicht erkannt.");
         }
 
@@ -45,7 +45,7 @@ namespace HonorarRechner.Wpf
         {
             var view = new PrivatDatenView();
             var vm = new PrivatDatenViewModel();
-            vm.ZurueckRequested += ShowStartView;
+            vm.ZurueckRequested += ShowPrivatLeistungenView;
             vm.WeiterRequested += ShowPrivatLeistungenView;
             view.DataContext = vm;
             MainContent.Content = view;
@@ -55,7 +55,8 @@ namespace HonorarRechner.Wpf
         {
             var view = new PrivatLeistungenView();
             var vm = new PrivatLeistungenViewModel();
-            vm.ZurueckRequested += ShowPrivatDatenView;
+            vm.ZurueckRequested += ShowStartView;
+            vm.WerteEingebenRequested += ShowPrivatDatenView;
             view.DataContext = vm;
             MainContent.Content = view;
         }

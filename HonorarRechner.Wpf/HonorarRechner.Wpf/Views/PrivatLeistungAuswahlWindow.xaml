@@ -106,11 +106,57 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0">
-                    <TextBlock Text="Leistung auswaehlen" Style="{StaticResource DialogTitle}"/>
-                    <TextBlock Text="Bitte eine Leistung markieren und hinzufuegen."
-                               FontSize="13" Foreground="#2E5A78" Margin="0,6,0,0"/>
-                </StackPanel>
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Leistung auswaehlen" Style="{StaticResource DialogTitle}"/>
+                        <TextBlock Text="Bitte eine Leistung markieren und hinzufuegen."
+                                   FontSize="13" Foreground="#2E5A78" Margin="0,6,0,0"/>
+                    </StackPanel>
+
+                    <Border Grid.Column="1"
+                            Width="300"
+                            Height="38"
+                            CornerRadius="19"
+                            BorderBrush="#C9DDED"
+                            BorderThickness="1"
+                            Background="White"
+                            VerticalAlignment="Top"
+                            HorizontalAlignment="Right">
+                        <Grid>
+                            <TextBox x:Name="SucheTextBox"
+                                     Padding="14,6"
+                                     FontSize="14"
+                                     BorderThickness="0"
+                                     Background="Transparent"
+                                     VerticalContentAlignment="Center"
+                                     TextChanged="SucheTextBox_TextChanged"/>
+                            <TextBlock Text="Suchen..."
+                                       Margin="14,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Foreground="#7A97AC"
+                                       IsHitTestVisible="False">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=SucheTextBox}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsKeyboardFocused, ElementName=SucheTextBox}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </Border>
+                </Grid>
 
                 <ListView x:Name="OptionenList" Grid.Row="1" Margin="0,16,0,16"
                           ItemsSource="{Binding Optionen}"
