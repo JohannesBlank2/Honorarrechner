@@ -5,6 +5,8 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Media;
 using HonorarRechner.Wpf.ViewModels;
 
 namespace HonorarRechner.Wpf.Views
@@ -22,6 +24,10 @@ namespace HonorarRechner.Wpf.Views
             InitializeComponent();
             Optionen = optionen;
             SelectedOption = selectedOption;
+            foreach (var option in Optionen)
+            {
+                option.AddCount = 1;
+            }
             _optionenView = CollectionViewSource.GetDefaultView(Optionen);
             _optionenView.Filter = FilterOption;
             DataContext = this;
@@ -37,7 +43,11 @@ namespace HonorarRechner.Wpf.Views
             SelectedOptions.Clear();
             foreach (var item in OptionenList.SelectedItems.OfType<PrivatLeistungOption>())
             {
-                SelectedOptions.Add(item);
+                var addCount = item.AddCount < 1 ? 1 : item.AddCount;
+                for (var i = 0; i < addCount; i++)
+                {
+                    SelectedOptions.Add(item);
+                }
             }
 
             DialogResult = true;
@@ -50,6 +60,12 @@ namespace HonorarRechner.Wpf.Views
 
         private void OptionenList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            if (IsFromInteractiveElement(e.OriginalSource as DependencyObject))
+            {
+                e.Handled = true;
+                return;
+            }
+
             if (OptionenList.SelectedItems.Count == 0)
             {
                 return;
@@ -73,6 +89,11 @@ namespace HonorarRechner.Wpf.Views
         private void OptionenListItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (sender is not ListViewItem item)
+            {
+                return;
+            }
+
+            if (IsFromInteractiveElement(e.OriginalSource as DependencyObject))
             {
                 return;
             }
@@ -106,6 +127,37 @@ namespace HonorarRechner.Wpf.Views
             }
 
             return option.Name.IndexOf(suche, System.StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static bool IsFromInteractiveElement(DependencyObject? source)
+        {
+            while (source != null)
+            {
+                if (source is ButtonBase || source is TextBoxBase)
+                {
+                    return true;
+                }
+
+                source = VisualTreeHelper.GetParent(source);
+            }
+
+            return false;
+        }
+
+        private void IncreaseItemCount_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is PrivatLeistungOption option)
+            {
+                option.AddCount++;
+            }
+        }
+
+        private void DecreaseItemCount_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is PrivatLeistungOption option && option.AddCount > 1)
+            {
+                option.AddCount--;
+            }
         }
     }
 }

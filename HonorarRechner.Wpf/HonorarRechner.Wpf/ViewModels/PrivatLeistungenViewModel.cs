@@ -16,12 +16,12 @@ namespace HonorarRechner.Wpf.ViewModels
         public event Action? WerteEingebenRequested;
 
         private const string EinkommensteuerName = "Einkommensteuererklärung";
-        private const string UeberschussKapitalvermoegenName = "EÜE Kapitalvermögen";
-        private const string UeberschussNichtselbstName = "EÜE Nichtselbst. Arbeit";
-        private const string UeberschussGewerbeName = "EÜB Gewerbebetrieb Selbstst.";
-        private const string UeberschussSonstigeName = "EÜE Sonstige Einkünfte";
-        private const string UeberschussVermietungName = "EÜE Vermiet./Verpacht.";
-        private const string UstErklaerungConsultingName = "USt-Erklärung Consulting";
+        private const string UeberschussKapitalvermoegenName = "Kapitalvermögen";
+        private const string UeberschussNichtselbstName = "Nichtselbst. Arbeit";
+        private const string UeberschussGewerbeName = "Gewerbebetrieb Selbstst.";
+        private const string UeberschussSonstigeName = "Sonstige Einkünfte";
+        private const string UeberschussVermietungName = "Vermiet./Verpacht.";
+        private const string UstErklaerungConsultingName = "USt-Erklärung";
         private const string PruefungSteuerbescheidName = "Prüfung eines Steuerbescheids";
 
         private readonly TabellenWerte _werte;
@@ -342,15 +342,50 @@ namespace HonorarRechner.Wpf.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
-    public class PrivatLeistungOption
+    public class PrivatLeistungOption : INotifyPropertyChanged
     {
+        private decimal _preis;
+        private int _addCount = 1;
+
         public PrivatLeistungOption(string name, decimal preis)
         {
             Name = name;
-            Preis = preis;
+            _preis = preis;
         }
 
         public string Name { get; }
-        public decimal Preis { get; set; }
+
+        public decimal Preis
+        {
+            get => _preis;
+            set
+            {
+                if (_preis == value)
+                {
+                    return;
+                }
+
+                _preis = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Preis)));
+            }
+        }
+
+        public int AddCount
+        {
+            get => _addCount;
+            set
+            {
+                var safeValue = value < 1 ? 1 : value;
+                if (_addCount == safeValue)
+                {
+                    return;
+                }
+
+                _addCount = safeValue;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AddCount)));
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
     }
 }
