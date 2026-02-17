@@ -188,7 +188,7 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="{Binding Name}" FontSize="15"
                                                Foreground="#003B5C" TextWrapping="Wrap"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding Preis, StringFormat={}{0:C}}" FontSize="15"
+                                    <TextBlock Grid.Column="1" Text="{Binding Preis, StringFormat={}{0:0.00} €}" FontSize="15"
                                                FontWeight="SemiBold" Foreground="#003B5C"
                                                Margin="20,0,0,0" VerticalAlignment="Top"/>
                                 </Grid>

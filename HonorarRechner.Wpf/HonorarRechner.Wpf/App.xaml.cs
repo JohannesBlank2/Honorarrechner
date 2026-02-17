@@ -20,30 +20,42 @@ namespace HonorarRechner.Wpf
 
             try
             {
-                // Pfad zur Excel auf G:\
-                string excelRootPath = @"G:\Honorar_Rechner";
+                // Primär auf G:\ suchen, danach als Fallback auf dem Desktop.
+                string gDriveRootPath = @"G:\Honorar_Rechner";
+                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
                 string[] dateiKandidaten =
                 {
                     "Honorar_Rechner_Werte.xlsx",
                 };
 
-                string excelFilePath = "Honorar_Rechner_Werte.xlsx";
-                foreach (var dateiName in dateiKandidaten)
+                string? excelFilePath = null;
+                string[] suchPfade = { gDriveRootPath, desktopPath };
+
+                foreach (var suchPfad in suchPfade)
                 {
-                    var kandidat = Path.Combine(excelRootPath, dateiName);
-                    if (!File.Exists(kandidat))
+                    foreach (var dateiName in dateiKandidaten)
                     {
-                        continue;
+                        var kandidat = Path.Combine(suchPfad, dateiName);
+                        if (!File.Exists(kandidat))
+                        {
+                            continue;
+                        }
+
+                        excelFilePath = kandidat;
+                        break;
                     }
 
-                    excelFilePath = kandidat;
-                    break;
+                    if (!string.IsNullOrWhiteSpace(excelFilePath))
+                    {
+                        break;
+                    }
                 }
 
                 if (string.IsNullOrWhiteSpace(excelFilePath))
                 {
-                    excelFilePath = Path.Combine(excelRootPath, dateiKandidaten[0]);
+                    throw new FileNotFoundException(
+                        $"Die Datei '{dateiKandidaten[0]}' wurde weder unter '{gDriveRootPath}' noch auf dem Desktop gefunden.");
                 }
 
                 // Laden versuchen
